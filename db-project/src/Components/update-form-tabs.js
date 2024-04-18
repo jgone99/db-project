@@ -4,28 +4,37 @@ import * as Yup from "yup";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormGroup, Button, InputGroup, FormLabel, Row, Col, Tab, Tabs } from "react-bootstrap";
 
-var employeeSearchData = {}
-var employeeUpdateData = {}
-var departmentSearchData = {}
-var departmentUpdateData = {}
+var employeeSearchData = {
+    ssn: undefined,
+    dob: undefined,
+    f_name: undefined,
+    m_init: undefined,
+    l_name: undefined,
+    address: undefined,
+    dept_num: undefined
+}
+var employeeUpdateData = {
+    ssn: undefined,
+    dob: undefined,
+    f_name: undefined,
+    m_init: undefined,
+    l_name: undefined,
+    address: undefined,
+    dept_num: undefined
+}
+var departmentSearchData = {
+    dept_num: undefined,
+    dept_name: undefined,
+    manager_ssn: undefined
+}
+var departmentUpdateData = {
+    dept_num: undefined,
+    dept_name: undefined,
+    manager_ssn: undefined
+}
 var tabKey = 'employee'
 
 const UpdateFormTabs = ({ initialValues, updateEmployee, updateDepartment }) => {
-    const [searchSSN, setSearchSSN] = useState()
-    const [searchDob, setSearchDob] = useState()
-    const [searchFName, setSearchFName] = useState()
-    const [searchMInit, setSearchMInit] = useState()
-    const [searchLName, setSearchLName] = useState()
-    const [searchAddress, setSearchAddress] = useState()
-    const [searchDeptNum, setSearchDeptNum] = useState()
-    const [updateSSN, setUpdateSSN] = useState()
-    const [updateDob, setUpdateDob] = useState()
-    const [updateFName, setUpdateFName] = useState()
-    const [updateMInit, setUpdateMInit] = useState()
-    const [updateLName, setUpdateLName] = useState()
-    const [updateAddress, setUpdateAddress] = useState()
-    const [updateDeptNum, setUpdateDeptNum] = useState()
-
     const saveTab = (key) => {
         tabKey = key
     }
@@ -46,47 +55,50 @@ const UpdateFormTabs = ({ initialValues, updateEmployee, updateDepartment }) => 
     const onChangeSearchSSN = () => {
         const ssn = document.querySelectorAll('.ssn')
         if (tabKey === 'employee') {
-            employeeSearchData['ssn'] = Number(ssn[0].value + ssn[1].value + ssn[2].value)
+            employeeSearchData.ssn = Number(ssn[0].value + ssn[1].value + ssn[2].value)
         }
         else {
-            departmentSearchData['ssn'] = Number(ssn[0].value + ssn[1].value + ssn[2].value)
+            departmentSearchData.ssn = Number(ssn[0].value + ssn[1].value + ssn[2].value)
         }
-        setSearchSSN(Number(ssn[0].value.toString() + ssn[1].value.toString() + ssn[2].value.toString()))
     }
 
     const onChangeUpdateSSN = () => {
         const ssn = document.querySelectorAll('.ssn')
+        const fullSSNString = String(ssn[0].value + ssn[1].value + ssn[2].value)
         if (tabKey === 'employee') {
-            employeeSearchData['ssn'] = Number(ssn[0].value + ssn[1].value + ssn[2].value)
+            employeeSearchData.ssn = fullSSNString.length === 0 ? undefined : Number(fullSSNString)
         }
         else {
-            departmentSearchData['ssn'] = Number(ssn[0].value + ssn[1].value + ssn[2].value)
+            departmentSearchData.ssn = fullSSNString.length === 0 ? undefined : Number(fullSSNString)
         }
-        setSearchSSN(Number(ssn[0].value.toString() + ssn[1].value.toString() + ssn[2].value.toString()))
     }
 
     const onBlurEmployeeSearch = (e) => {
         const name = e.target.getAttribute('name')
         const value = e.target.value
-        employeeSearchData[name] = value
+        if (name in employeeSearchData)
+            employeeSearchData[name] = value
     }
 
     const onBlurEmployeeUpdate = (e) => {
         const name = e.target.getAttribute('name')
         const value = e.target.value
-        employeeUpdateData[name] = value
+        if (name in employeeUpdateData)
+            employeeUpdateData[name] = value
     }
 
     const onBlurDepartmentSearch = (e) => {
         const name = e.target.getAttribute('name')
         const value = e.target.value
-        departmentSearchData[name] = value
+        if (name in departmentSearchData)
+            departmentSearchData[name] = value
     }
 
     const onBlurDepartmentUpdate = (e) => {
         const name = e.target.getAttribute('name')
         const value = e.target.value
-        departmentUpdateData[name] = value
+        if (name in departmentUpdateData)
+            departmentUpdateData[name] = value
     }
 
     const handleEmployeeSubmit = () => {
