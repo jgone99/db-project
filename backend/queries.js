@@ -22,8 +22,20 @@ const getEmployees = async (request, response) => {
 	//console.log(res)
 }
 
+const getDepartments = async (request, response) => {
+	const res = await query('SELECT dept_num FROM department GROUP BY dept_num')
+	response.status(200).send(res)
+	console.log(res)
+}
+
 const createEmployee = async (data) => {
 	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = data.body
+
+	const queryString = 
+	`INSERT INTO employee
+	(ssn, dob, f_name, m_init, l_name, address, dept_num)
+	VALUES (COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn), COALESCE(CAST(NULLIF($2,'') AS DATE), dob), COALESCE(NULLIF($3,''), f_name), COALESCE(NULLIF($4,''), m_init), COALESCE(NULLIF($5,''), l_name), COALESCE(NULLIF($6,''), address), COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num))`
+
 
 	try {
 		await query('INSERT INTO employee (ssn, dob, f_name, m_init, l_name, address, dept_num) VALUES ($1, $2, $3, $4, $5, $6, $7)',
@@ -52,16 +64,19 @@ const updateEmployee = async (request, response) => {
 
 	const queryString = 
 	`UPDATE employee
-	SET (ssn, dob, f_name, m_init, l_name, address, dept_num)
-	VALUES (COALESCE($1, ssn), COALESCE($2, dob), COALESCE($3, f_name), COALESCE($4, m_init), COALESCE($5, l_name), COALESCE($6, address),COALESCE($7, dep_num))
-	WHERE `
+	SET ssn=COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn), dob=COALESCE(CAST(NULLIF($2,'') AS DATE), dob), f_name=COALESCE(NULLIF($3,''), f_name), m_init=COALESCE(NULLIF($4,''), m_init), l_name=COALESCE(NULLIF($5,''), l_name), address=COALESCE(NULLIF($6,''), address), dept_num=COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num)
+	WHERE ssn=COALESCE(CAST(NULLIF($8,'') AS INTEGER), ssn) AND dob=COALESCE(CAST(NULLIF($9,'') AS DATE), dob) AND f_name=COALESCE(NULLIF($10,''), f_name) AND m_init=COALESCE(NULLIF($11,''), m_init) AND l_name=COALESCE(NULLIF($12,''), l_name) AND address=COALESCE(NULLIF($13,''), address) AND dept_num=COALESCE(CAST(NULLIF($14,'') AS INTEGER), dept_num)`
 
-	console.log(setString, whereString)
+	console.log(Object.values(updateData).concat(Object.values(searchData)))
+
+	const params = Object.values(updateData).concat(Object.values(searchData))
+
 	try {
-	    await query(queryString, se)
+	    await query(queryString, params)
 	    console.log('employee successfully updated')
 	} catch (error) {
 	    console.log('employee failed to update', error)
+		response.status(401)
 	}
 
 }
@@ -72,15 +87,7 @@ const updateDepartment = async() => {
 
 const deleteEmployee = async(data) => {
 	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = data.body
-	console.log(data.                           then(result => console.log(result)))
-	var expression = new BooleanExpressionBuilder()
-	Array.from(data.body).forEach(attr => {
-		console.log(attr)
-		expression.EQUALS(attr.key(), attr.value()).AND()
-	})
-	expression.END()
-
-	console.log(expression.expression)
+	console.log(data.then(result => console.log(result)))
 
 	try {
 		await query('DELETE FROM employee WHERE',
@@ -95,38 +102,9 @@ const deleteDepartment = async(data) => {
 
 }
 
-class BooleanExpressionBuilder {
-	constructor(value) {
-		this.expression = String(value)
-	}
-	EQUALS(name, value) {
-		this.expression = this.expression.concat(` ${name}=${value} `)
-		return this
-	}
-	GREAT(name, value) {
-		this.expression = this.expression.concat(` ${name}>${value} `)
-		return this
-	}
-	LESS(name, value) {
-		this.expression = this.expression.concat(` ${name}<${value} `)
-		return this
-	}
-	AND() {
-		this.expression = this.expression.concat(` AND  `)
-		return this
-	}
-	OR() {
-		this.expression = this.expression.concat(` OR  `)
-		return this
-	}
-	END() {
-		this.expression = (this.expression.endsWith(' AND ') || this.expression.endsWith(' OR ')) ? this.expression.substring(0, Math.max(this.expression.lastIndexOf(' AND '), this.expression.lastIndexOf(' OR '))).trim() : this.expression.trim()
-		return this.expression
-	}
-}
-
 module.exports = {
 	getEmployees,
+	getDepartments,
 	createEmployee,
 	createDepartment,
 	updateEmployee,

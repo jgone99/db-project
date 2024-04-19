@@ -1,19 +1,8 @@
-'use client'
 
 import React, { useState } from "react";
 import CreateFormTabs from "./create-form-tabs";
 
 const Create = () => {
-	const [formValues, setFormValues] = useState(
-	{
-		ssn: '',
-		dob: '',
-		f_name: '',
-		m_init: '',
-		l_name: '',
-		address: '',
-		dept_num: '',
-	})
 
 	const submitNewEmployee = async (data) => {
 		const response = await fetch('http://localhost:4000/create-employee', {
@@ -37,11 +26,21 @@ const Create = () => {
 		//console.log(response.json())
 	}
 
+	const fetchExistingDepartments = async() => {
+		const response = await fetch('http://localhost:4000/department-list', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		return response
+	}
+
 	return (
 		<CreateFormTabs
-			initialValues={formValues}
 			submitNewEmployee={submitNewEmployee}
 			submitNewDepartment={submitNewDepartment}
+			getDepartments={fetchExistingDepartments}
 			enableReinitialize>
 			Create
 		</CreateFormTabs>
