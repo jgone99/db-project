@@ -49,33 +49,20 @@ const createDepartment = async (data) => {
 const updateEmployee = async (request, response) => {
 	const searchData = request.body.searchData
 	const updateData = request.body.updateData
-	//console.log(request)
 
-	var setString = ' SET '
-	updateData.ssn ? setString += `ssn=${updateData.ssn}` : null
-	updateData.dob ? setString += `, dob=${updateData.dob}` : null
-	updateData.f_name ? setString += `, f_name=${updateData.f_name}` : null
-	updateData.m_init ? setString += `, m_init=${updateData.m_init}` : null
-	updateData.l_name ? setString += `, l_name=${updateData.l_name}` : null
-	updateData.address ? setString += `, address=${updateData.address}` : null
-	updateData.dept_num ? setString += `, dept_num=${updateData.dept_num} ` : null
-
-	var whereString = ' WHERE '
-	searchData.ssn ? whereString += `ssn=${searchData.ssn}` : null
-	searchData.dob ? whereString += `, dob=${searchData.dob}` : null
-	searchData.f_name ? whereString += `, f_name=${searchData.f_name}` : null
-	searchData.m_init ? whereString += `, m_init=${searchData.m_init}` : null
-	searchData.l_name ? whereString += `, l_name=${searchData.l_name}` : null
-	searchData.address ? whereString += `, address=${searchData.address}` : null
-	searchData.dept_num ? whereString += `, dept_num=${searchData.dept_num} ` : null
+	const queryString = 
+	`UPDATE employee
+	SET (ssn, dob, f_name, m_init, l_name, address, dept_num)
+	VALUES (COALESCE($1, ssn), COALESCE($2, dob), COALESCE($3, f_name), COALESCE($4, m_init), COALESCE($5, l_name), COALESCE($6, address),COALESCE($7, dep_num))
+	WHERE `
 
 	console.log(setString, whereString)
-	// try {
-	//     await query(`UPDATE employee ${setString} ${whereString}`)
-	//     console.log('employee successfully updated')
-	// } catch (error) {
-	//     console.log('employee failed to update', error)
-	// }
+	try {
+	    await query(queryString, se)
+	    console.log('employee successfully updated')
+	} catch (error) {
+	    console.log('employee failed to update', error)
+	}
 
 }
 

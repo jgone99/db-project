@@ -115,31 +115,6 @@ const UpdateFormTabs = ({ initialValues, updateEmployee, updateDepartment }) => 
         })
     }
 
-    // const handleSubmit = () => {
-    //     onSubmit({
-    //         searchData:
-    //         {
-    //             ssn: searchSSN,
-    //             dob: searchDob,
-    //             f_name: searchFName,
-    //             m_init: searchMInit,
-    //             l_name: searchLName,
-    //             address: searchAddress,
-    //             dept_num: searchDeptNum
-    //         },
-    //         updateData:
-    //         {
-    //             ssn: updateSSN,
-    //             dob: updateDob,
-    //             f_name: updateFName,
-    //             m_init: updateMInit,
-    //             l_name: updateLName,
-    //             address: updateAddress,
-    //             dept_num: updateDeptNum
-    //         }
-    //     })
-    // }
-
     const employeeValidationSchema = Yup.object().shape({
         s_ssn1: Yup.number().integer().max(999).min(0).required("Required"),
         s_ssn2: Yup.number().integer().max(99).min(0).required("Required"),
@@ -222,8 +197,10 @@ const UpdateFormTabs = ({ initialValues, updateEmployee, updateDepartment }) => 
                                                 component="span"
                                             />
                                         </InputGroup>
-
                                     </FormGroup>
+
+                                    <FormLabel className='subsection form-label'>Or</FormLabel>
+
                                     <FormGroup className="form-group">
                                         <InputGroup>
                                             <InputGroup.Text>Date of Birth</InputGroup.Text>
@@ -317,8 +294,10 @@ const UpdateFormTabs = ({ initialValues, updateEmployee, updateDepartment }) => 
                                                 component="span"
                                             />
                                         </InputGroup>
-
                                     </FormGroup>
+
+                                    <FormLabel className='subsection form-label'>Or</FormLabel>
+
                                     <FormGroup className="form-group">
                                         <InputGroup>
                                             <InputGroup.Text>Date of Birth</InputGroup.Text>
