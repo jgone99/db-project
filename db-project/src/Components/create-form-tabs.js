@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { FormGroup, Button, InputGroup, Col, Tab, Tabs, FormControl, FormLabel } from "react-bootstrap";
+import { FormGroup, Button, InputGroup, Col, Tab, Tabs, FormControl, FormLabel, Modal } from "react-bootstrap";
+import { differenceInYears } from "date-fns/differenceInYears";
 
 var employeeData = {
     ssn: '',
@@ -29,20 +30,25 @@ const prev_dept_num = {
     department: ''
 }
 
-const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartments }) => {
+const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentNums, getEmployeeSSNExists, getDepartmentNumExists }) => {
     const [ existingDepts, setExistingDepts ] = useState([])
     const [ loading, setLoading ] = useState(true)
 
+    const [errorModalShow, setErrorModalShow] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
+    const [responseModalShow, setResponseModalShow] = useState(false)
+    const [responseMessage, setResponseMessage] = useState('')
+
     useEffect(() => {
-        getDepartments().then(result => {
+        getDepartmentNums().then(result => {
             result.json().then(result => {
-                setExistingDepts(Object.values(result[0]))
+                setExistingDepts(result.map(obj => obj.dept_num))
                 setLoading(false)
             })
         })
-    },[getDepartments])
+    },[getDepartmentNums])
 
-    const generateDepartmentOptions = () => {
+    const generateDepartmentNumsOptions = () => {
         return existingDepts.map(deptNum => {
             return <option value={deptNum}>{deptNum}</option>
         })
@@ -82,14 +88,12 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartments
         const ssn = document.querySelectorAll(tabKey === 'employee' ? '.e_ssn' : '.d_ssn')
         console.log(ssn.length)
         const fullSSNString = String(ssn[0].value + ssn[1].value + ssn[2].value)
-        if (fullSSNString.length !== 9)
-            return
         if (tabKey === 'employee') {
-            employeeData.ssn = fullSSNString
+            employeeData.ssn = fullSSNString.length === 9 ? fullSSNString : ''
             console.log(employeeData)
         }
         else {
-            departmentData.ssn = fullSSNString
+            departmentData.manager_ssn = fullSSNString.length === 9 ? fullSSNString : ''
             console.log(departmentData)
         }
     }
@@ -110,7 +114,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartments
         console.log(departmentData)
     }
 
-    const onBlurDeptNum = (e, setFieldValue) => {
+    const onChangeDeptNum = (e, setFieldValue) => {
         const name = e.target.getAttribute('name')
         const value = e.target.value
         console.log(value)
@@ -127,30 +131,96 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartments
     }
 
     const handleEmployeeSubmit = () => {
-        submitNewEmployee(employeeData)
+        submitNewEmployee(employeeData).then(result => {
+            result.status == 200 ? showResposneModal('Employee Created', true) : showErrorModal('Something Went Wrong', true)
+        })
+        clearEmployeeForm()
     }
 
     const handleDepartmentSubmit = () => {
-        submitNewDepartment(departmentData)
+        submitNewDepartment(departmentData).then(result => {
+            result.status == 200 ? showResposneModal('Department Created', true) : showErrorModal('Something Went Wrong', true)
+        })
+        clearDepartmentForm()
+    }
+
+    const clearEmployeeForm = () => {
+
+    }
+
+    const clearDepartmentForm = () => {
+
+    }
+
+    const closeResponseModal = () => {
+        setResponseModalShow(false)
     }
 
     const employeeValidationSchema = Yup.object().shape({
-        ssn: Yup.string().length(9).required("Required"),
-        dob: Yup.date().max(new Date()).required("Required"),
-        f_name: Yup.string().max(20).matches(/^[a-z]+$/).required("Required"),
-        m_init: Yup.string().length(1).matches(/^[a-z]+$/).required("Required"),
-        l_name: Yup.string().max(20).matches(/^[a-z]+$/).required("Required"),
+        ssn: Yup.string().length(9, 'Must be exactly 9 digits').required("Required"),
+        dob: Yup.date().test('dob', 'Must be at least 18 years old', (value) => !value || differenceInYears(new Date(), new Date(value)) >= 18).required("At least one field must be filled"),
+        f_name: Yup.string().max(20).matches(/^[a-zA-Z]+$/).required("Required"),
+        m_init: Yup.string().length(1).matches(/^[a-zA-Z]+$/).notRequired(),
+        l_name: Yup.string().max(20).matches(/^[a-zA-Z]+$/).required("Required"),
         address: Yup.string().max(40).required("Required"),
         dept_num: Yup.number().integer().min(0).required("Required"),
     });
 
     const departmentValidateSchema = Yup.object().shape({
         dept_num: Yup.number().integer().min(0).required("Required"),
-        dept_name: Yup.string().max(20).matches(/^[a-z ]+$/).required("Required"),
-        manager_ssn: Yup.string().length(9).required("Required"),
+        dept_name: Yup.string().max(20).matches(/^[a-zA-Z ]+$/).required("Required"),
+        manager_ssn: Yup.string().length(9, 'Must be exactly 9 digits').notRequired(),
     })
 
-    //console.log(initialValues);
+    const createEmployeeClick = () => {
+        getEmployeeSSNExists(employeeData).then(result => {
+            result.json().then(result => {
+                result[0].exists ? showErrorModal('An employee already exists with this SSN', true) : handleEmployeeSubmit()
+            })
+        })
+
+    }
+
+    const createDepartmentClick = () => {
+        departmentData.manager_ssn ? 
+        Promise.all([getDepartmentNumExists(departmentData), getEmployeeSSNExists({
+            ssn: departmentData.manager_ssn,
+            dob: '',
+            f_name: '',
+            m_init: '',
+            l_name: '',
+            address: '',
+            dept_num: ''
+        })]).then(result => {
+            Promise.all(result.map(prom => prom.json())).then(result => {
+                if(result[0][0].exists) {
+                    showErrorModal('A department already exists with this Department Number', true)
+                } else if(!result[1][0].exists) {
+                    showErrorModal('No employee exists with this SSN', true)
+                } else {
+                    handleDepartmentSubmit()
+                } 
+            })
+        }) : getDepartmentNumExists(departmentData).then(result => {
+            result.json().then(result => {
+                result[0].exists ? showErrorModal('A department already exists with this Department Number', true) : handleDepartmentSubmit()
+            })
+        })
+    }
+
+    const showErrorModal = (errMessage, show) => {
+        setErrorMessage(errMessage)
+        setErrorModalShow(show)
+    }
+
+    const showResposneModal = (errMessage, show) => {
+        setResponseMessage(errMessage)
+        setResponseModalShow(show)
+    }
+
+    const closeErrorModal = () => {
+        setErrorModalShow(false)
+    }
 
     return !loading && (
         <Tabs
@@ -174,10 +244,48 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartments
                         dept_num: '',
                     }}
                         validationSchema={employeeValidationSchema}
-                        onSubmit={handleEmployeeSubmit}>
-                        {({ setFieldValue, validateField }) => (
+                        onSubmit={createEmployeeClick}
+                        >
+                        {({ setFieldValue, validateField, resetForm }) => (
                             <Form className="form">
-                                {console.log(existingDepts)}
+                                <Modal
+                                    centered
+                                    size="lg"
+                                    show={errorModalShow}>
+                                    <Modal.Header closeButton
+                                        className="modal-element">
+                                        <Modal.Title>
+                                            Error
+                                        </Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body
+                                    className="modal-element">
+                                        <p>{errorMessage}</p>
+                                    </Modal.Body>
+                                    <Modal.Footer
+                                    className="modal-element">
+                                        <Button onClick={closeErrorModal}>Close</Button>
+                                    </Modal.Footer>
+                                </Modal>
+                                <Modal
+                                    centered
+                                    size="lg"
+                                    show={responseModalShow}>
+                                    <Modal.Header closeButton
+                                        className="modal-element">
+                                        <Modal.Title>
+                                            Processed
+                                        </Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body
+                                    className="modal-element">
+                                        <p>{responseMessage}</p>
+                                    </Modal.Body>
+                                    <Modal.Footer
+                                    className="modal-element">
+                                        <Button onClick={closeResponseModal}>Close</Button>
+                                    </Modal.Footer>
+                                </Modal>
                                 <Col>
                                     <FormGroup className="form-group">
                                         <InputGroup>
@@ -299,8 +407,8 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartments
                                                 className='form-control'
                                                 as='select'
                                                 onBlur={onBlurEmployee}
-                                                onChange={(e) => onBlurDeptNum(e, setFieldValue)}>
-                                                    {[<option value=''>Select a Department</option>].concat(generateDepartmentOptions())}
+                                                onChange={(e) => onChangeDeptNum(e, setFieldValue)}>
+                                                    {[<option value=''>Select</option>].concat(generateDepartmentNumsOptions())}
                                                 </Field>
                                         </InputGroup>
                                             
@@ -330,14 +438,55 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartments
                         manager_ssn: '',
                     }}
                         validationSchema={departmentValidateSchema}
-                        onSubmit={handleDepartmentSubmit}>
+                        onSubmit={createDepartmentClick}
+                        >
                         {({ setFieldValue, validateField }) => (
                             <Form className="form">
+                                <Modal
+                                    centered
+                                    size="lg"
+                                    show={errorModalShow}>
+                                    <Modal.Header closeButton
+                                    className="modal-element">
+                                        <Modal.Title className="modal-element">
+                                            Error
+                                        </Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body
+                                    className="modal-element">
+                                        <p>{errorMessage}</p>
+                                    </Modal.Body>
+                                    <Modal.Footer
+                                    className="modal-element">
+                                        <Button onClick={closeErrorModal}>Close</Button>
+                                    </Modal.Footer>
+                                </Modal>
+                                <Modal
+                                    centered
+                                    size="lg"
+                                    show={responseModalShow}>
+                                    <Modal.Header closeButton
+                                        className="modal-element">
+                                        <Modal.Title>
+                                            Processed
+                                        </Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body
+                                    className="modal-element">
+                                        <p>{responseMessage}</p>
+                                    </Modal.Body>
+                                    <Modal.Footer
+                                    className="modal-element">
+                                        <Button onClick={closeResponseModal}>Close</Button>
+                                    </Modal.Footer>
+                                </Modal>
                                 <Col>
                                     <FormGroup className="form-group">
                                         <InputGroup>
                                             <InputGroup.Text>Department #</InputGroup.Text>
-                                            <Field name="dept_num" type="text" className="form-control" onBlur={onBlurDepartment} onChange={(e) => onBlurDeptNum(e, setFieldValue)} />
+                                            <Field name="dept_num" type="text" className="form-control" 
+                                            onBlur={onBlurDepartment} 
+                                            onChange={(e) => onChangeDeptNum(e, setFieldValue)} />
                                             <ErrorMessage
                                                 name="dept_num"
                                                 className="d-block invalid-feedback"

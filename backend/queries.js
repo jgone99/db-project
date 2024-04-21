@@ -1,5 +1,7 @@
 'use server'
 
+const { request, response } = require('express')
+
 require('dotenv').config()
 
 const Pool = require('pg').Pool
@@ -14,7 +16,7 @@ const query = async (text, params) => {
 	return res.rows
 }
 
-const getEmployees = async (request, response) => {
+const getEmployeesBySSN = async (request, response) => {
 	const ssn = String(request.body.ssn)
 
 	const res = await query('SELECT * FROM employee WHERE CAST(ssn AS TEXT) LIKE $1 || \'%\'', [ssn])
@@ -22,39 +24,111 @@ const getEmployees = async (request, response) => {
 	//console.log(res)
 }
 
-const getDepartments = async (request, response) => {
-	const res = await query('SELECT dept_num FROM department GROUP BY dept_num')
-	response.status(200).send(res)
-	console.log(res)
-}
+const getEmployees = async (request, response) => {
+	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = request.body
 
-const createEmployee = async (data) => {
-	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = data.body
+	const searchQueryString =
+		`SELECT COUNT(*)
+		FROM employee
+		WHERE ssn=COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn) AND dob=COALESCE(CAST(NULLIF($2,'') AS DATE), dob) AND f_name=COALESCE(NULLIF($3,''), f_name) AND m_init=COALESCE(NULLIF($4,''), m_init) AND l_name=COALESCE(NULLIF($5,''), l_name) AND address=COALESCE(NULLIF($6,''), address) AND dept_num=COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num)`
 
-	const queryString = 
-	`INSERT INTO employee
-	(ssn, dob, f_name, m_init, l_name, address, dept_num)
-	VALUES (COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn), COALESCE(CAST(NULLIF($2,'') AS DATE), dob), COALESCE(NULLIF($3,''), f_name), COALESCE(NULLIF($4,''), m_init), COALESCE(NULLIF($5,''), l_name), COALESCE(NULLIF($6,''), address), COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num))`
-
-
+	const searchParams = [ssn, dob, f_name, m_init, l_name, address, dept_num]
+	var res
 	try {
-		await query('INSERT INTO employee (ssn, dob, f_name, m_init, l_name, address, dept_num) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-			[ssn, dob, f_name, m_init, l_name, address, dept_num])
-		console.log('employee successfully inserted')
+		res = await query(searchQueryString, searchParams)
+		console.log(res)
+		response.status(200).send(res)
 	} catch (error) {
-		console.log('failed to create employee', error)
+		console.log('error fetching employees', error)
 	}
 }
 
-const createDepartment = async (data) => {
-	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = data.body
+const getDepartmentsNums = async (request, response) => {
+	const res = await query('SELECT dept_num FROM department GROUP BY dept_num')
+	response.status(200).send(res)
+	//console.log(res)
+}
+
+const getDepartmentsNames = async (request, response) => {
+	const res = await query('SELECT dept_num FROM department GROUP BY dept_num')
+	response.status(200).send(res)
+	//console.log(res)
+}
+
+const createEmployee = async (request, response) => {
+	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = request.body
+
+	const queryString =
+		`INSERT INTO employee
+		(ssn, dob, f_name, m_init, l_name, address, dept_num)
+		VALUES (CAST($1 AS INTEGER), CAST($2 AS DATE), $3, NULLIF($4, ''), $5, $6, CAST($7 AS INTEGER))`
+
 
 	try {
-		await query('INSERT INTO employee (ssn, dob, f_name, m_init, l_name, address, dept_num) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-			[ssn, dob, f_name, m_init, l_name, address, dept_num])
+		const res = await query(queryString, [ssn, dob, f_name, m_init, l_name, address, dept_num])
 		console.log('employee successfully inserted')
+		response.status(200).send(res)
 	} catch (error) {
 		console.log('failed to create employee', error)
+		response.status(500).end()
+	}
+
+}
+
+const employeeSSNExists = async (request, response) => {
+	const { ssn } = request.body
+
+	const queryString =
+		`SELECT EXISTS (
+		SELECT *
+		FROM employee
+		WHERE ssn=CAST(NULLIF($1, '') AS INTEGER)
+	)`
+
+	
+	try {
+		const res = await query(queryString, [ssn])
+		response.status(200).send(res)
+	} catch (error) {
+		console.log(error)
+		response.status(500).end()
+	}
+}
+
+const departmentNumExists = async (request, response) => {
+	const { dept_num } = request.body
+
+	const queryString =
+		`SELECT EXISTS (
+		SELECT *
+		FROM department
+		WHERE dept_num=$1
+	)`
+
+	try {
+		const res = await query(queryString, [dept_num])
+		response.status(200).send(res)
+	} catch (error) {
+		console.log(error)
+		response.status(500).end()
+	}
+}
+
+const createDepartment = async (request, response) => {
+	const { dept_num, dept_name, manager_ssn } = request.body
+
+	const queryString =
+		`INSERT INTO department
+	(dept_num, dept_name, manager_ssn)
+	VALUES (CAST(NULLIF($1, '') AS INTEGER), $2, CAST(NULLIF($3, '') AS INTEGER))`
+
+	try {
+		const res = await query(queryString, [dept_num, dept_name, manager_ssn])
+		console.log('department successfully inserted')
+		response.status(200).send(res)
+	} catch (error) {
+		console.log('failed to create department', error)
+		response.status(500).end()
 	}
 }
 
@@ -62,53 +136,135 @@ const updateEmployee = async (request, response) => {
 	const searchData = request.body.searchData
 	const updateData = request.body.updateData
 
-	const queryString = 
-	`UPDATE employee
-	SET ssn=COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn), dob=COALESCE(CAST(NULLIF($2,'') AS DATE), dob), f_name=COALESCE(NULLIF($3,''), f_name), m_init=COALESCE(NULLIF($4,''), m_init), l_name=COALESCE(NULLIF($5,''), l_name), address=COALESCE(NULLIF($6,''), address), dept_num=COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num)
-	WHERE ssn=COALESCE(CAST(NULLIF($8,'') AS INTEGER), ssn) AND dob=COALESCE(CAST(NULLIF($9,'') AS DATE), dob) AND f_name=COALESCE(NULLIF($10,''), f_name) AND m_init=COALESCE(NULLIF($11,''), m_init) AND l_name=COALESCE(NULLIF($12,''), l_name) AND address=COALESCE(NULLIF($13,''), address) AND dept_num=COALESCE(CAST(NULLIF($14,'') AS INTEGER), dept_num)`
+	const updateQueryString =
+		`UPDATE employee
+		SET ssn=COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn), dob=COALESCE(CAST(NULLIF($2,'') AS DATE), dob), f_name=COALESCE(NULLIF($3,''), f_name), m_init=COALESCE(NULLIF($4,''), m_init), l_name=COALESCE(NULLIF($5,''), l_name), address=COALESCE(NULLIF($6,''), address), dept_num=COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num)
+		WHERE ssn=COALESCE(CAST(NULLIF($8,'') AS INTEGER), ssn) AND dob=COALESCE(CAST(NULLIF($9,'') AS DATE), dob) AND f_name=COALESCE(NULLIF($10,''), f_name) AND m_init=COALESCE(NULLIF($11,''), m_init) AND l_name=COALESCE(NULLIF($12,''), l_name) AND address=COALESCE(NULLIF($13,''), address) AND dept_num=COALESCE(CAST(NULLIF($14,'') AS INTEGER), dept_num)`
 
 	console.log(Object.values(updateData).concat(Object.values(searchData)))
 
 	const params = Object.values(updateData).concat(Object.values(searchData))
 
 	try {
-	    await query(queryString, params)
-	    console.log('employee successfully updated')
+		const res = await query(updateQueryString, params)
+		console.log('employee successfully updated')
+		response.status(200).send(res)
 	} catch (error) {
-	    console.log('employee failed to update', error)
-		response.status(401)
+		console.log('employee failed to update', error)
+		response.status(401).end()
 	}
 
 }
 
-const updateDepartment = async() => {
+const getDepartmentCount = async (request, response) => {
+	const { dept_num, dept_name, manager_ssn } = request.body
 
+	const searchQueryString =
+		`SELECT COUNT(*)
+		FROM department
+		WHERE dept_num=COALESCE(CAST(NULLIF($1,'') AS INTEGER), dept_num) AND dept_name=COALESCE(NULLIF($2,''), dept_name) AND (manager_ssn=COALESCE(CAST(NULLIF($3,'') AS INTEGER), manager_ssn) OR manager_ssn IS NULL)`
+
+	const searchParams = [dept_num, dept_name, manager_ssn]
+	var res
+	try {
+		res = await query(searchQueryString, searchParams)
+		console.log(res)
+		response.status(200).send(res)
+	} catch (error) {
+		console.log('error fetching departments', error)
+		response.status(500).end()
+	}
 }
 
-const deleteEmployee = async(data) => {
-	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = data.body
-	console.log(data.then(result => console.log(result)))
+const updateDepartment = async (request, response) => {
+	const searchData = request.body.searchData
+	const updateData = request.body.updateData
+
+	const updateQueryString =
+		`UPDATE department
+	SET dept_num=COALESCE(CAST(NULLIF($1,'') AS INTEGER), dept_num), dept_name=COALESCE(NULLIF($2,''), dept_name), manager_ssn=COALESCE(CAST(NULLIF($3,'') AS INTEGER), manager_ssn)
+	WHERE dept_num=COALESCE(CAST(NULLIF($4,'') AS INTEGER), dept_num) AND dept_name=COALESCE(NULLIF($5,''), dept_name) AND (manager_ssn=COALESCE(CAST(NULLIF($6,'') AS INTEGER), manager_ssn) OR manager_ssn IS NULL)`
+
+	console.log([updateData.dept_num, updateData.dept_name, updateData.manager_ssn, searchData.dept_num, searchData.dept_name, searchData.manager_ssn])
 
 	try {
-		await query('DELETE FROM employee WHERE',
-			[ssn, dob, f_name, m_init, l_name, address, dept_num])
-		console.log('employee successfully deleted')
+		const res = await query(updateQueryString, 
+			[updateData.dept_num, updateData.dept_name, updateData.manager_ssn, searchData.dept_num, searchData.dept_name, searchData.manager_ssn])
+		console.log('department successfully updated')
+		response.status(200).send(res)
 	} catch (error) {
-		console.log('failed to delete employee', error)
+		console.log('department failed to update', error)
+		response.status(401).end()
 	}
 }
 
-const deleteDepartment = async(data) => {
+const deleteEmployee = async (request, response) => {
+	const { ssn, dob, f_name, m_init, l_name, address, dept_num } = request.body
 
+	const queryString =
+		`DELETE FROM employee
+		WHERE ssn=COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn) AND dob=COALESCE(CAST(NULLIF($2,'') AS DATE), dob) AND f_name=COALESCE(NULLIF($3,''), f_name) AND m_init=COALESCE(NULLIF($4,''), m_init) AND l_name=COALESCE(NULLIF($5,''), l_name) AND address=COALESCE(NULLIF($6,''), address) AND dept_num=COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num)`
+
+	try {
+		const res = await query(queryString, [ssn, dob, f_name, m_init, l_name, address, dept_num])
+		console.log('employee successfully deleted')
+		response.status(200).send(res)
+	} catch (error) {
+		console.log('failed to delete employee', error)
+		response.status(500).end()
+	}
+}
+
+const deleteDepartment = async (request, response) => {
+	const { dept_num, dept_name, manager_ssn } = request.body
+
+	const queryString = 
+		`DELETE FROM department
+		WHERE dept_num=COALESCE(CAST(NULLIF($1,'') AS INTEGER), dept_num) AND dept_name=COALESCE(NULLIF($2,''), dept_name) AND (manager_ssn=COALESCE(CAST(NULLIF($3,'') AS INTEGER), manager_ssn) OR manager_ssn IS NULL)`
+
+	try {
+		const res = await query(queryString, [dept_num, dept_name, manager_ssn])
+		console.log('department successfully deleted')
+		response.status(200).send(res)
+	} catch (error) {
+		console.log('failed to delete department', error)
+		response.status(500).end()
+	}
+}
+
+const getEmployeeCountByDepartmentMatch = async(request, response) => {
+	const { dept_num, dept_name, manager_ssn } = request.body
+
+	const queryString = 
+		`SELECT COUNT(*)
+		FROM employee NATURAL JOIN (
+			SELECT *
+			FROM department
+			WHERE dept_num=COALESCE(CAST(NULLIF($1,'') AS INTEGER), dept_num) AND dept_name=COALESCE(NULLIF($2,''), dept_name) AND (manager_ssn=COALESCE(CAST(NULLIF($3,'') AS INTEGER), manager_ssn) OR manager_ssn IS NULL)
+		)`
+
+	try {
+		const res = await query(queryString, [dept_num, dept_name, manager_ssn])
+		console.log('successfully fetched data')
+		response.status(200).send(res)
+	} catch (error) {
+		console.log('failed to fetch data')
+		response.stats(500).end()
+	}
 }
 
 module.exports = {
 	getEmployees,
-	getDepartments,
+	getDepartmentCount,
+	getEmployeesBySSN,
+	getDepartmentsNums,
 	createEmployee,
 	createDepartment,
 	updateEmployee,
 	updateDepartment,
 	deleteEmployee,
-	deleteDepartment
+	deleteDepartment,
+	employeeSSNExists,
+	departmentNumExists,
+	getEmployeeCountByDepartmentMatch
 }

@@ -2,17 +2,7 @@
 import React, { useState } from "react"
 import UpdateFormTabs from "./update-form-tabs"
 
-const Update = () => {
-    const [formValues, setFormValues] = useState(
-        {
-            ssn: '',
-            dob: '',
-            f_name: '',
-            m_init: '',
-            l_name: '',
-            address: '',
-            dept_num: '',
-        })
+const Update = ({ getDepartmentNums, getEmployeeCount, getDepartmentCount, getEmployeeSSNExists, getDepartmentNumExists }) => {
 
     const updateEmployee = async (data) => {
         const response = await fetch('http://localhost:4000/update-employee', {
@@ -22,7 +12,7 @@ const Update = () => {
             },
             body: JSON.stringify(data),
         })
-        //console.log(response.json())
+        return response
     }
 
     const updateDepartment = async (data) => {
@@ -33,14 +23,18 @@ const Update = () => {
             },
             body: JSON.stringify(data),
         })
-        //console.log(response.json())
+        return response
     }
 
     return (
         <UpdateFormTabs
-            initialValues={formValues}
             updateEmployee={updateEmployee}
             updateDepartment={updateDepartment}
+            getDepartmentNums={getDepartmentNums}
+            getEmployeeCount={getEmployeeCount}
+            getDepartmentCount={getDepartmentCount}
+            getEmployeeSSNExists={getEmployeeSSNExists} 
+			getDepartmentNumExists={getDepartmentNumExists}
             enableReinitialize>
             Update
         </UpdateFormTabs>

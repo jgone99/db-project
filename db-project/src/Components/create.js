@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import CreateFormTabs from "./create-form-tabs";
 
-const Create = () => {
+const Create = ({ getDepartmentNums, getEmployeeSSNExists, getDepartmentNumExists }) => {
 
 	const submitNewEmployee = async (data) => {
 		const response = await fetch('http://localhost:4000/create-employee', {
@@ -12,7 +12,7 @@ const Create = () => {
 			},
 			body: JSON.stringify(data),
 		})
-		//console.log(response.json())
+		return response
 	}
 
 	const submitNewDepartment = async (data) => {
@@ -23,16 +23,6 @@ const Create = () => {
 			},
 			body: JSON.stringify(data),
 		})
-		//console.log(response.json())
-	}
-
-	const fetchExistingDepartments = async() => {
-		const response = await fetch('http://localhost:4000/department-list', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
 		return response
 	}
 
@@ -40,7 +30,9 @@ const Create = () => {
 		<CreateFormTabs
 			submitNewEmployee={submitNewEmployee}
 			submitNewDepartment={submitNewDepartment}
-			getDepartments={fetchExistingDepartments}
+			getDepartmentNums={getDepartmentNums}
+			getEmployeeSSNExists={getEmployeeSSNExists}
+			getDepartmentNumExists={getDepartmentNumExists}
 			enableReinitialize>
 			Create
 		</CreateFormTabs>
