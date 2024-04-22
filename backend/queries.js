@@ -17,11 +17,13 @@ const query = async (text, params) => {
 }
 
 const getEmployeesBySSN = async (request, response) => {
-	const ssn = String(request.body.ssn)
+	const { ssn } = request.body
 
-	const res = await query('SELECT * FROM employee WHERE CAST(ssn AS TEXT) LIKE $1 || \'%\'', [ssn])
+	const queryString = `SELECT * FROM employee WHERE NULLIF($1, '') IS NOT NULL AND CAST(ssn AS TEXT) LIKE $1 || '%'`
+
+	const res = await query(queryString, [ssn])
 	response.status(200).send(res)
-	//console.log(res)
+	console.log(res)
 }
 
 const getEmployees = async (request, response) => {
