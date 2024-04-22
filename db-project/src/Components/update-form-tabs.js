@@ -49,11 +49,6 @@ const prev_dept_num_update = {
     department: ''
 }
 
-var allEmptyEmployeeSearch = true
-var allEmptyEmployeeUpdate = true
-var allEmptyDepartmentSearch = true
-var allEmptyDepartmentUpdate = true
-
 const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, getEmployeeCount, getDepartmentCount, getEmployeeSSNExists, getDepartmentNumExists }) => {
     const [existingDepts, setExistingDepts] = useState([])
     const [loading, setLoading] = useState(true)
@@ -87,27 +82,6 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
 
     const saveTab = (key) => {
         tabKey = key
-    }
-
-    const onChangeEmployeeSearch = (validateField) => {
-        allEmptyEmployeeSearch = !Object.values(employeeSearchData).some(value => value?.length > 0)
-
-        console.log(allEmptyEmployeeSearch)
-    }
-
-    const onChangeEmployeeUpdate = (validateField) => {
-        const fields = Array.from(document.querySelectorAll('.employee-update-field'))
-        allEmptyEmployeeUpdate = !Object.values(employeeUpdateData).some(value => value?.length > 0)
-    }
-
-    const onChangeDepartmentSearch = (validateField) => {
-        const fields = Array.from(document.querySelectorAll('.department-search-field'))
-        allEmptyDepartmentSearch = !Object.values(departmentSearchData).some(value => value?.length > 0)
-    }
-
-    const onChangeDepartmentUpdate = (validateField) => {
-        const fields = Array.from(document.querySelectorAll('.department-update-field'))
-        allEmptyDepartmentUpdate = !Object.values(departmentUpdateData).some(value => value?.length > 0)
     }
 
     const ssnSearchChange = (e, setFieldValue) => {
@@ -432,22 +406,23 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     }
 
     const updateEmployeeClick = () => {
-        getEmployeeSSNExists(employeeUpdateData).then(result => {
-            result.json().then(result => {
+        Promise.all([getEmployeeCount(employeeSearchData), getEmployeeSSNExists({
+            ssn: employeeUpdateData.ssn,
+            dob: '',
+            f_name: '',
+            m_init: '',
+            l_name: '',
+            address: '',
+            dept_num: ''
+        })]).then(result => {
+            Promise.all(result.map(prom => prom.json())).then(result => {
                 console.log(result)
-                if (result[0].exists) {
-                    showErrorModal('Employee already exists with the given SSN', true)
-                } else {
-                    getEmployeeCount(employeeSearchData).then(result => {
-                        result.json().then(result => {
-                            console.log(employeeSearchData)
-                            console.log(result)
-                            setEmployeeUpdateCount(result[0].count)
-                            setEmployeeCountModalButtonActive(true)
-                            result[0].count < 1 ? showErrorModal('No employee exists that match search', true) : result[0].count > 1 ? setEmployeeCountModalShow(true) : handleEmployeeSubmit()
-                        })
-                    })
-                }
+                setEmployeeUpdateCount(result[0][0].count)
+                setEmployeeCountModalButtonActive(true)
+                result[0][0] < 1 ? 
+                showErrorModal('No employee matches search', true) : employeeUpdateData.ssn && result[1][0].exists ? 
+                showErrorModal('Employee already exists with update SSN', true) : result[0][0].count > 1 ?
+                setEmployeeCountModalShow(true) : handleEmployeeSubmit()
             })
         })
     }
