@@ -36,6 +36,8 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     const [responseModalShow, setResponseModalShow] = useState(false)
     const [responseMessage, setResponseMessage] = useState('')
 
+    const [maxDate, setMaxDate] = useState()
+
     const[employeeSearchData, setEmployeeSearchData] = useState({
         ssn: '',
         dob: '',
@@ -73,6 +75,13 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                 setLoading(false)
             })
         })
+        const currentDate = new Date()
+        const year = currentDate.getFullYear() - 18
+        const month = currentDate.getMonth() + 1
+        const day = currentDate.getDate()
+        const dateString = `${year}-${(month < 10 ? '0' : '') + month}-${day}`
+        setMaxDate(dateString)
+        console.log(dateString)
     }, [getDepartmentNums])
 
     const generateDepartmentOptions = () => {
@@ -615,6 +624,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                             <InputGroup hasValidation>
                                                 <InputGroup.Text>Date of Birth</InputGroup.Text>
                                                 <Field name="s_dob" type="date"
+                                                    max={maxDate}
                                                     className="form-control employee-search-field"
                                                     onBlur={(e) => onBlurEmployeeSearch(e, validateField)} />
                                             </InputGroup>
@@ -759,6 +769,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                             <InputGroup>
                                                 <InputGroup.Text>Date of Birth</InputGroup.Text>
                                                 <Field name="u_dob" type="date"
+                                                    max={maxDate}
                                                     className="form-control employee-update-field"
                                                     onBlur={(e) => onBlurEmployeeUpdate(e, validateField)} />
                                             </InputGroup>
