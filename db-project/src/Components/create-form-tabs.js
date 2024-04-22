@@ -5,8 +5,6 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormGroup, Button, InputGroup, Col, Tab, Tabs, FormControl, FormLabel, Modal } from "react-bootstrap";
 import { differenceInYears } from "date-fns/differenceInYears";
 
-var tabKey = 'employee'
-
 const prev_ssn = ['', '', '', '', '', '']
 
 const prev_dept_num = {
@@ -30,6 +28,8 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
         manager_ssn: ''
     })
 
+    const [tabKey, setTabKey] = useState('employee')
+
     const [ existingDepts, setExistingDepts ] = useState([])
     const [ loading, setLoading ] = useState(true)
 
@@ -40,13 +40,17 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
     
     const [maxDate, setMaxDate] = useState()
 
-    useEffect(() => {
+    const populateDeptNums = () => {
         getDepartmentNums().then(result => {
             result.json().then(result => {
                 setExistingDepts(result.map(obj => obj.dept_num))
                 setLoading(false)
             })
         })
+    }
+
+    useEffect(() => {
+        populateDeptNums()
         const currentDate = new Date()
         const year = currentDate.getFullYear() - 18
         const month = currentDate.getMonth() + 1
@@ -63,7 +67,8 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
     }
 
     const saveTab = (key) => {
-        tabKey = key
+        setTabKey(key)
+        populateDeptNums()
     }
 
     const ssnChange = (e, setFieldValue) => {
@@ -95,6 +100,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
     const onBlurSSN = () => {
         const ssn = document.querySelectorAll(tabKey === 'employee' ? '.e_ssn' : '.d_ssn')
         console.log(ssn.length)
+        console.log(tabKey)
         const fullSSNString = String(ssn[0].value + ssn[1].value + ssn[2].value)
         if (tabKey === 'employee') {
             employeeData.ssn = fullSSNString.length === 9 ? fullSSNString : ''

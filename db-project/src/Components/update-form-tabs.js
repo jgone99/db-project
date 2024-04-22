@@ -5,8 +5,6 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormGroup, Button, InputGroup, FormLabel, Row, Col, Tab, Tabs, FormControl, Modal } from "react-bootstrap";
 import differenceInYears from 'date-fns/differenceInYears'
 
-var tabKey = 'employee'
-
 const prev_ssn_search = ['', '', '', '', '', '']
 
 const prev_ssn_update = ['', '', '', '', '', '']
@@ -37,6 +35,11 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     const [responseMessage, setResponseMessage] = useState('')
 
     const [maxDate, setMaxDate] = useState()
+    const [tabKey, setTabKey] = useState('employee')
+
+    const [confirmModalShow, setConfirmModalShow] = useState(false)
+    const [confirmMessage, setConfirmMessage] = useState('')
+    const [confirmModalButtonActive, setConfirmModalButtonActive] = useState(false)
 
     const[employeeSearchData, setEmployeeSearchData] = useState({
         ssn: '',
@@ -67,7 +70,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         manager_ssn: ''
     })
 
-    useEffect(() => {
+    const populateDeptNums = () => {
         getDepartmentNums().then(result => {
             result.json().then(result => {
                 console.log(result)
@@ -75,6 +78,10 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                 setLoading(false)
             })
         })
+    }
+
+    useEffect(() => {
+        populateDeptNums()
         const currentDate = new Date()
         const year = currentDate.getFullYear() - 18
         const month = currentDate.getMonth() + 1
@@ -91,7 +98,8 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     }
 
     const saveTab = (key) => {
-        tabKey = key
+        setTabKey(key)
+        populateDeptNums()
     }
 
     const ssnSearchChange = (e, setFieldValue) => {
