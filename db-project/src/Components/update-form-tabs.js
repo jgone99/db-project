@@ -5,16 +5,6 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormGroup, Button, InputGroup, FormLabel, Row, Col, Tab, Tabs, FormControl, Modal } from "react-bootstrap";
 import differenceInYears from 'date-fns/differenceInYears'
 
-var employeeSearchData = {
-    ssn: '',
-    dob: '',
-    f_name: '',
-    m_init: '',
-    l_name: '',
-    address: '',
-    dept_num: ''
-}
-
 var tabKey = 'employee'
 
 const prev_ssn_search = ['', '', '', '', '', '']
@@ -583,7 +573,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
 
                                                 <FormControl
                                                     name="s_ssn1"
-                                                    placeholder="'123'"
+                                                    placeholder="123"
                                                     type="text"
                                                     className="form-control s_e_ssn"
                                                     maxLength={3}
@@ -591,17 +581,19 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                                     onBlur={() => onBlurSearchSSN(validateField)}
 
                                                 />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="s_ssn2"
-                                                    placeholder="'45'"
+                                                    placeholder="45"
                                                     type="text"
                                                     className="form-control s_e_ssn"
                                                     maxLength={2}
                                                     onChange={(e) => ssnSearchChange(e, setFieldValue)}
                                                     onBlur={() => onBlurSearchSSN(validateField)} />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="s_ssn3"
-                                                    placeholder="'6789'"
+                                                    placeholder="6789"
                                                     type="text"
                                                     className="form-control s_e_ssn"
                                                     maxLength={4}
@@ -727,7 +719,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
 
                                                 <FormControl
                                                     name="u_ssn1"
-                                                    placeholder="'123'"
+                                                    placeholder="123"
                                                     type="text"
                                                     className="form-control u_e_ssn"
                                                     maxLength={3}
@@ -735,17 +727,19 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                                     onBlur={() => onBlurUpdateSSN(validateField)}
 
                                                 />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="u_ssn2"
-                                                    placeholder="'45'"
+                                                    placeholder="45"
                                                     type="text"
                                                     className="form-control u_e_ssn"
                                                     maxLength={2}
                                                     onChange={(e) => ssnUpdateChange(e, setFieldValue)}
                                                     onBlur={() => onBlurUpdateSSN(validateField)} />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="u_ssn3"
-                                                    placeholder="'6789'"
+                                                    placeholder="6789"
                                                     type="text"
                                                     className="form-control u_e_ssn"
                                                     maxLength={4}
@@ -982,11 +976,11 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                         </FormGroup>
                                         <FormGroup className="form-group">
                                             <InputGroup>
-                                                <InputGroup.Text>SSN</InputGroup.Text>
+                                                <InputGroup.Text>Manager SSN</InputGroup.Text>
 
                                                 <FormControl
                                                     name="s_manager_ssn1"
-                                                    placeholder="'123'"
+                                                    placeholder="123"
                                                     type="text"
                                                     className="form-control s_d_ssn"
                                                     maxLength={3}
@@ -994,17 +988,19 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                                     onBlur={() => onBlurSearchSSN(validateField)}
 
                                                 />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="s_manager_ssn2"
-                                                    placeholder="'45'"
+                                                    placeholder="45"
                                                     type="text"
                                                     className="form-control s_d_ssn"
                                                     maxLength={2}
                                                     onChange={(e) => ssnSearchChange(e, setFieldValue)}
                                                     onBlur={() => onBlurSearchSSN(validateField)} />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="s_manager_ssn3"
-                                                    placeholder="'6789'"
+                                                    placeholder="6789"
                                                     type="text"
                                                     className="form-control s_d_ssn"
                                                     maxLength={4}
@@ -1055,11 +1051,11 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                         </FormGroup>
                                         <FormGroup className="form-group">
                                             <InputGroup>
-                                                <InputGroup.Text>SSN</InputGroup.Text>
+                                                <InputGroup.Text>Manager SSN</InputGroup.Text>
 
                                                 <FormControl
                                                     name="u_manager_ssn1"
-                                                    placeholder="'123'"
+                                                    placeholder="123"
                                                     type="text"
                                                     className="form-control u_d_ssn"
                                                     maxLength={3}
@@ -1067,17 +1063,19 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                                     onBlur={() => onBlurUpdateSSN(validateField)}
 
                                                 />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="u_manager_ssn2"
-                                                    placeholder="'45'"
+                                                    placeholder="45"
                                                     type="text"
                                                     className="form-control u_d_ssn"
                                                     maxLength={2}
                                                     onChange={(e) => ssnUpdateChange(e, setFieldValue)}
                                                     onBlur={() => onBlurUpdateSSN(validateField)} />
+                                                <InputGroup.Text>-</InputGroup.Text>
                                                 <FormControl
                                                     name="u_manager_ssn3"
-                                                    placeholder="'6789'"
+                                                    placeholder="6789"
                                                     type="text"
                                                     className="form-control u_d_ssn"
                                                     maxLength={4}

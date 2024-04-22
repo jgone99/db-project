@@ -377,24 +377,26 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                             <InputGroup.Text>SSN</InputGroup.Text>
                                             <FormControl
                                                 name="ssn1"
-                                                placeholder="'123'"
+                                                placeholder="123"
                                                 type="text"
                                                 className="form-control e_ssn"
                                                 maxLength={3}
                                                 onChange={(e) => ssnChange(e, setFieldValue)}
                                                 onBlur={() => onBlurSSN(setFieldValue)}
                                             />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="ssn2"
-                                                placeholder="'45'"
+                                                placeholder="45"
                                                 type="text"
                                                 className="form-control e_ssn"
                                                 maxLength={2}
                                                 onChange={(e) => ssnChange(e, setFieldValue)}
                                                 onBlur={() => onBlurSSN(setFieldValue)} />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="ssn3"
-                                                placeholder="'6789'"
+                                                placeholder="6789"
                                                 type="text"
                                                 className="form-control e_ssn"
                                                 maxLength={4}
@@ -645,7 +647,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
 
                                             <FormControl
                                                 name="manager_ssn1"
-                                                placeholder="'123'"
+                                                placeholder="123"
                                                 type="text"
                                                 className="form-control d_ssn"
                                                 maxLength={3}
@@ -653,17 +655,19 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                                 onBlur={() => onBlurSSN(validateField)}
 
                                             />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="manager_ssn2"
-                                                placeholder="'45'"
+                                                placeholder="45"
                                                 type="text"
                                                 className="form-control d_ssn"
                                                 maxLength={2}
                                                 onChange={(e) => ssnChange(e, setFieldValue)}
                                                 onBlur={() => onBlurSSN(validateField)} />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="manager_ssn3"
-                                                placeholder="'6789'"
+                                                placeholder="6789"
                                                 type="text"
                                                 className="form-control d_ssn"
                                                 maxLength={4}

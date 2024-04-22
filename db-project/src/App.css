@@ -93,3 +93,24 @@ input::-webkit-inner-spin-button {
 input[type=number] {
 	-moz-appearance: textfield;
 }
+
+::-webkit-input-placeholder {
+	font-style: italic;
+	color: black !important;
+	opacity: 0.4 !important;
+ }
+ :-moz-placeholder {
+	font-style: italic;
+	color: black !important;
+	opacity: 0.4 !important; 
+ }
+ ::-moz-placeholder {
+	font-style: italic;
+	color: black !important;
+	opacity: 0.4 !important;  
+ }
+ :-ms-input-placeholder {  
+	font-style: italic; 
+	color: black !important;
+	opacity: 0.4 !important;
+ }

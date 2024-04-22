@@ -165,7 +165,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
 
     const employeeValidationSchema = Yup.object().shape({
         ssn: Yup.string().length(9, 'Must be exactly 9 digits').required("Required"),
-        dob: Yup.date().test('dob', 'Must be at least 18 years old', (value) => !value || differenceInYears(new Date(), new Date(value)) >= 18).required("At least one field must be filled"),
+        dob: Yup.date().test('dob', 'Must be at least 18 years old', (value) => !value || differenceInYears(new Date(), new Date(value)) >= 18).required("Required"),
         f_name: Yup.string().max(20).matches(/^[a-zA-Z]+$/).required("Required"),
         m_init: Yup.string().length(1).matches(/^[a-zA-Z]+$/).notRequired(),
         l_name: Yup.string().max(20).matches(/^[a-zA-Z]+$/).required("Required"),
@@ -299,24 +299,27 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                             <InputGroup.Text>SSN</InputGroup.Text>
                                             <FormControl
                                                 name="ssn1"
-                                                placeholder="'123'"
+                                                placeholder="123"
                                                 type="text"
                                                 className="form-control e_ssn"
                                                 maxLength={3}
                                                 onChange={(e) => ssnChange(e, setFieldValue)}
                                                 onBlur={onBlurSSN}
                                             />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="ssn2"
-                                                placeholder="'45'"
+                                                placeholder="45"
                                                 type="text"
                                                 className="form-control e_ssn"
                                                 maxLength={2}
                                                 onChange={(e) => ssnChange(e, setFieldValue)}
-                                                onBlur={onBlurSSN} />
+                                                onBlur={onBlurSSN} 
+                                                />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="ssn3"
-                                                placeholder="'6789'"
+                                                placeholder="6789"
                                                 type="text"
                                                 className="form-control e_ssn"
                                                 maxLength={4}
@@ -521,7 +524,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
 
                                             <FormControl
                                                 name="manager_ssn1"
-                                                placeholder="'123'"
+                                                placeholder="123"
                                                 type="text"
                                                 className="form-control d_ssn"
                                                 maxLength={3}
@@ -529,17 +532,19 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                                 onBlur={() => onBlurSSN(validateField)}
 
                                             />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="manager_ssn2"
-                                                placeholder="'45'"
+                                                placeholder="45"
                                                 type="text"
                                                 className="form-control d_ssn"
                                                 maxLength={2}
                                                 onChange={(e) => ssnChange(e, setFieldValue)}
                                                 onBlur={() => onBlurSSN(validateField)} />
+                                            <InputGroup.Text>-</InputGroup.Text>
                                             <FormControl
                                                 name="manager_ssn3"
-                                                placeholder="'6789'"
+                                                placeholder="6789"
                                                 type="text"
                                                 className="form-control d_ssn"
                                                 maxLength={4}
