@@ -233,7 +233,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                 console.log(result)
                 if(result[0][0].count < 1) {
                     showErrorModal('No department matches specified search', true)
-                } else if(result[0][0] > 1) {
+                } else if(result[0][0].count > 1) {
                     setDepartmentDeleteCount(result[0][0].count)
                     setEmployeeDeleteCount(result[1][0].count)
                     setDepartmentCountModalButtonActive(true)
@@ -526,15 +526,18 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                     centered
                                     size="lg"
                                     show={departmentModalShow}>
-                                    <Modal.Header closeButton>
+                                    <Modal.Header closeButton
+                                    className="modal-element">
                                         <Modal.Title>
                                             Confirmation
                                         </Modal.Title>
                                     </Modal.Header>
-                                    <Modal.Body>
+                                    <Modal.Body
+                                    className="modal-element">
                                         <p>This operation will delete {departmentDeleteCount} departments AND {employeeDeleteCount} employees!</p>
                                     </Modal.Body>
-                                    <Modal.Footer>
+                                    <Modal.Footer
+                                    className="modal-element">
                                         <Button onClick={cancelDepartmentModal}>Cancel</Button>
                                         <Button disabled={!departmentCountModalButtonActive} onClick={confirmDepartmentModal}>Confirm</Button>
                                     </Modal.Footer>

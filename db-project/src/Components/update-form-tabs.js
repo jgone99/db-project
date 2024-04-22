@@ -432,20 +432,19 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     }
 
     const updateEmployeeClick = () => {
-        Promise.all([getEmployeeSSNExists(employeeSearchData), getEmployeeSSNExists(employeeUpdateData)]).then(result => {
-            Promise.all(result.map(prom => prom.json())).then(result => {
+        getEmployeeSSNExists(employeeUpdateData).then(result => {
+            result.json().then(result => {
                 console.log(result)
-                if (!result[0][0].exists) {
-                    showErrorModal('No employee with the searched SSN exists', true)
-                } else if (result[1][0].exists) {
+                if (result[0].exists) {
                     showErrorModal('Employee already exists with the given SSN', true)
                 } else {
                     getEmployeeCount(employeeSearchData).then(result => {
                         result.json().then(result => {
+                            console.log(employeeSearchData)
                             console.log(result)
                             setEmployeeUpdateCount(result[0].count)
                             setEmployeeCountModalButtonActive(true)
-                            result[0].count > 1 ? setEmployeeCountModalShow(true) : handleEmployeeSubmit()
+                            result[0].count < 1 ? showErrorModal('No employee exists that match search', true) : result[0].count > 1 ? setEmployeeCountModalShow(true) : handleEmployeeSubmit()
                         })
                     })
                 }
@@ -454,7 +453,8 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     }
 
     const updateDepartmentClick = () => {
-        getEmployeeSSNExists({
+
+        Promise.all([getDepartmentCount(departmentSearchData), getEmployeeSSNExists({
             ssn: departmentUpdateData.manager_ssn,
             dob: '',
             f_name: '',
@@ -462,24 +462,16 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
             l_name: '',
             address: '',
             dept_num: ''
-        }).then(result => {
-            result.json().then(result => {
+        })]).then(result => {
+            Promise.all(result.map(prom => prom.json())).then(result => {
                 console.log(result)
-                if (!result[0].exists) {
-                    showErrorModal('No employee with this SSN exists', true)
-                } else {
-                    getDepartmentCount(departmentSearchData).then(result => {
-                        result.json().then(result => {
-                            console.log(result)
-                            setDepartmentUpdateCount(result[0].count)
-                            setDepartmentCountModalButtonActive(true)
-                            result[0].count > 1 ? setDepartmentCountModalShow(true) : handleDepartmentSubmit()
-                        })
-                    })
-                }
+                setDepartmentUpdateCount(result[0][0].count)
+                setDepartmentCountModalButtonActive(true)
+                result[0][0].count < 1 ? 
+                showErrorModal('No department matches search', true) : departmentUpdateData.manager_ssn && !result[1][0].exists ? 
+                showErrorModal('No employee with update SSN exists', true) : result[0][0].count > 1 ? setDepartmentCountModalShow(true) : handleDepartmentSubmit()
             })
         })
-
     }
 
     const closeErrorModal = () => {
