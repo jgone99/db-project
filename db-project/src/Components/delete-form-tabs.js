@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as Yup from "yup";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormGroup, Button, InputGroup, Col, Tab, Tabs, FormControl, FormLabel, Modal } from "react-bootstrap";
@@ -44,14 +44,14 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
     const [confirmMessage, setConfirmMessage] = useState('')
     const [confirmModalButtonActive, setConfirmModalButtonActive] = useState(false)
 
-    const populateDeptNums = () => {
+    const populateDeptNums = useCallback(() => {
         getDepartmentNums().then(result => {
             result.json().then(result => {
                 setExistingDepts(result.map(obj => obj.dept_num))
                 setLoading(false)
             })
         })
-    }
+    }, [getDepartmentNums])
 
     useEffect(() => {
         populateDeptNums()
@@ -62,7 +62,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
         const dateString = `${year}-${(month < 10 ? '0' : '') + month}-${day}`
         setMaxDate(dateString)
         console.log(dateString)
-    },[getDepartmentNums])
+    },[getDepartmentNums, populateDeptNums])
 
     const generateDepartmentNumsOptions = () => {
         return existingDepts.map(deptNum => {
@@ -158,13 +158,13 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
 
     const handleEmployeeSubmit = () => {
         submitDeleteEmployee(employeeData).then(result => {
-            result.status == 200 ? showResposneModal('Employee(s) Deleted', true) : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Employee(s) Deleted') : openErrorModal('Something Went Wrong')
         })
     }
 
     const handleDepartmentSubmit = () => {
         submitDeleteDepartment(departmentData).then(result => {
-            result.status == 200 ? showResposneModal('Department(s) Deleted', true) : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Department(s) Deleted') : openErrorModal('Something Went Wrong')
         })
     }
 
@@ -240,9 +240,8 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                 console.log(result)
                 const emp_count = result[0].count
                 setConfirmModalButtonActive(true)
-                result[0].count > 1 ? 
-                openConfirmModal(`This operation will delete ${emp_count} employees!`) : result[0].count < 1 ?
-                openErrorModal('No employee matches search') : handleEmployeeSubmit()
+                result[0].count < 1 ? openErrorModal('No employee matches search') : 
+                result[0].count > 1 ? openConfirmModal(`This operation will delete ${emp_count} employees!`) : handleEmployeeSubmit()
             })
         })
     }
@@ -252,30 +251,24 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
             console.log(result)
             Promise.all(result.map(prom => prom.json())).then(result => {
                 console.log(result)
-                    const dept_count = result[0][0].count
-                    const emp_count = result[1][0].count
-                    setConfirmModalButtonActive(true)
-                if(result[0][0].count < 1) {
-                    openErrorModal('No department matches specified search')
-                } else if(result[0][0].count > 1) {
-                    openConfirmModal(`This operation will delete ${dept_count} departments AND ${emp_count} employees!`)
-                } else if(result[1][0].count > 0) {
-                    openConfirmModal(`This opertation will delete this department WITH ${emp_count} employees!`)
-                } else {
-                    handleDepartmentSubmit()
-                }
+                const dept_count = result[0][0].count
+                const emp_count = result[1][0].count
+                setConfirmModalButtonActive(true)
+                result[0][0].count < 1 ? openErrorModal('No department matches specified search') : 
+                result[0][0].count > 1 ? openConfirmModal(`This operation will delete ${dept_count} departments AND ${emp_count} employees!`) : 
+                result[1][0].count > 0 ? openConfirmModal(`This opertation will delete this department WITH ${emp_count} employees!`) : handleDepartmentSubmit()
             })
         })
     }
 
     const confirmEmployeeModal = () => {
         handleEmployeeSubmit()
-        setConfirmModalShow(false)
+        closeConfirmModal()
     }
 
     const confirmDepartmentModal = () => {
         handleDepartmentSubmit()
-        setConfirmModalShow(false)
+        closeConfirmModal()
     }
 
     const openErrorModal = (message) => {
@@ -300,9 +293,9 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
         setResponseModalShow(false)
     }
 
-    const showResposneModal = (errMessage, show) => {
-        setResponseMessage(errMessage)
-        setResponseModalShow(show)
+    const openResponseModal = (message) => {
+        setResponseMessage(message)
+        setResponseModalShow(true)
     }
     
     return !loading && (

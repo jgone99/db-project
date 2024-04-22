@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import * as Yup from "yup";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormGroup, Button, InputGroup, FormLabel, Row, Col, Tab, Tabs, FormControl, Modal } from "react-bootstrap";
@@ -22,24 +22,19 @@ const prev_dept_num_update = {
 const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, getEmployeeCount, getDepartmentCount, getEmployeeSSNExists, getDepartmentNumExists }) => {
     const [existingDepts, setExistingDepts] = useState([])
     const [loading, setLoading] = useState(true)
-    const [employeeCountModalShow, setEmployeeCountModalShow] = useState(false)
-    const [departmentCountModalShow, setDepartmentCountModalShow] = useState(false)
-    const [employeeCountModalButtonActive, setEmployeeCountModalButtonActive] = useState(false)
-    const [departmentCountModalButtonActive, setDepartmentCountModalButtonActive] = useState(false)
-    const [employeeUpdateCount, setEmployeeUpdateCount] = useState(0)
-    const [departmentUpdateCount, setDepartmentUpdateCount] = useState(0)
 
     const [errorModalShow, setErrorModalShow] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
+
     const [responseModalShow, setResponseModalShow] = useState(false)
     const [responseMessage, setResponseMessage] = useState('')
-
-    const [maxDate, setMaxDate] = useState()
-    const [tabKey, setTabKey] = useState('employee')
 
     const [confirmModalShow, setConfirmModalShow] = useState(false)
     const [confirmMessage, setConfirmMessage] = useState('')
     const [confirmModalButtonActive, setConfirmModalButtonActive] = useState(false)
+
+    const [maxDate, setMaxDate] = useState()
+    const [tabKey, setTabKey] = useState('employee')
 
     const[employeeSearchData, setEmployeeSearchData] = useState({
         ssn: '',
@@ -70,7 +65,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         manager_ssn: ''
     })
 
-    const populateDeptNums = () => {
+    const populateDeptNums = useCallback(() => {
         getDepartmentNums().then(result => {
             result.json().then(result => {
                 console.log(result)
@@ -78,7 +73,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                 setLoading(false)
             })
         })
-    }
+    }, [getDepartmentNums])
 
     useEffect(() => {
         populateDeptNums()
@@ -89,7 +84,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         const dateString = `${year}-${(month < 10 ? '0' : '') + month}-${day}`
         setMaxDate(dateString)
         console.log(dateString)
-    }, [getDepartmentNums])
+    }, [getDepartmentNums, populateDeptNums])
 
     const generateDepartmentOptions = () => {
         return existingDepts.map(deptNum => {
@@ -183,6 +178,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         }
         else {
             departmentUpdateData.manager_ssn = fullSSNString.length === 9 ? fullSSNString : ''
+            setDepartmentUpdateData(departmentUpdateData)
             console.log(departmentUpdateData)
         }
     }
@@ -223,18 +219,21 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     const onBlurDepartmentUpdate = (e) => {
         const name = String(e.target.getAttribute('name')).substring(2)
         const value = e.target.value
-        if (name in departmentUpdateData)
+        if (name in departmentUpdateData) {
             departmentUpdateData[name] = value
+            setDepartmentUpdateData(departmentUpdateData)
+        }
+            
+
         console.log(departmentUpdateData)
     }
 
     const handleEmployeeSubmit = () => {
-        console.log(employeeSearchData)
         updateEmployee({
             searchData: employeeSearchData,
             updateData: employeeUpdateData
         }).then(result => {
-            result.status == 200 ? showResposneModal('Employee(s) Updated', true) : showErrorModal('Something Went Wrong', true)
+            result.status === 200 ? openResponseModal('Employee(s) Updated') : openErrorModal('Something Went Wrong')
         })
     }
 
@@ -243,7 +242,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
             searchData: departmentSearchData,
             updateData: departmentUpdateData
         }).then(result => {
-            result.status == 200 ? showResposneModal('Department(s) Updated', true) : showErrorModal('Something Went Wrong', true)
+            result.status === 200 ? openResponseModal('Department(s) Updated') : openErrorModal('Something Went Wrong')
         })
     }
 
@@ -321,11 +320,6 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
             if (!keys[0] && !keys[1] && !keys[2] && !keys[3] && !keys[4] && !keys[5])
                 return schema.length(9, 'Must be exactly 9 digits').required("At least one field must be filled")
             return schema.length(9, 'Must be exactly 9 digits').notRequired()
-        }),
-        s_dob: Yup.date().when(['s_ssn', 's_f_name', 's_m_init', 's_l_name', 's_address', 's_dept_num'], {
-            is: (s_ssn, s_f_name, s_m_init, s_l_name, s_address, s_dept_num) => !s_ssn && !s_f_name && !s_m_init && !s_l_name && !s_address && !s_dept_num,
-            then: () => Yup.date().test('s_dob', 'Must be at least 18 years old', (value) => !value || differenceInYears(new Date(), new Date(value)) >= 18).required("At least one field must be filled"),
-            otherwise: () => Yup.date().test('s_dob', 'Must be at least 18 years old', (value) => !value || differenceInYears(new Date(), new Date(value)) >= 18).notRequired()
         }),
         u_dob: Yup.date().when(['u_ssn', 'u_f_name', 'u_m_init', 'u_l_name', 'u_address', 'u_dept_num'], {
             is: (u_ssn, u_f_name, u_m_init, u_l_name, u_address, u_dept_num) => !u_ssn && !u_f_name && !u_m_init && !u_l_name && !u_address && !u_dept_num,
@@ -412,27 +406,14 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         ['u_dept_name', 'u_manager_ssn']
     ])
 
-    const cancelEmployeeCountModal = () => {
-        setEmployeeCountModalShow(false)
-    }
-
     const confirmEmployeeCountModal = () => {
         handleEmployeeSubmit()
-        setEmployeeCountModalShow(false)
-    }
-
-    const cancelDepartmentCountModal = () => {
-        setDepartmentCountModalShow(false)
+        closeConfirmModal()
     }
 
     const confirmDepartmentCountModal = () => {
         handleDepartmentSubmit()
-        setDepartmentCountModalShow(false)
-    }
-
-    const showErrorModal = (errMessage, show) => {
-        setErrorMessage(errMessage)
-        setErrorModalShow(show)
+        closeConfirmModal()
     }
 
     const updateEmployeeClick = () => {
@@ -447,18 +428,16 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         })]).then(result => {
             Promise.all(result.map(prom => prom.json())).then(result => {
                 console.log(result)
-                setEmployeeUpdateCount(result[0][0].count)
-                setEmployeeCountModalButtonActive(true)
-                result[0][0].count < 1 ? 
-                showErrorModal('No employee matches search', true) : employeeUpdateData.ssn && result[1][0].exists ? 
-                showErrorModal('Employee already exists with update SSN', true) : result[0][0].count > 1 ?
-                setEmployeeCountModalShow(true) : handleEmployeeSubmit()
+                const emp_count = result[0][0].count
+                setConfirmModalButtonActive(true)
+                result[0][0].count < 1 ? openErrorModal('No employee matches search') : 
+                result[1][0].exists && employeeUpdateData.ssn ? openErrorModal('Employee already exists with update SSN') : 
+                result[0][0].count > 1 ? openConfirmModal(`This operation will update ${emp_count} employees!`) : handleEmployeeSubmit()
             })
         })
     }
 
     const updateDepartmentClick = () => {
-
         Promise.all([getDepartmentCount(departmentSearchData), getEmployeeSSNExists({
             ssn: departmentUpdateData.manager_ssn,
             dob: '',
@@ -470,13 +449,27 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         })]).then(result => {
             Promise.all(result.map(prom => prom.json())).then(result => {
                 console.log(result)
-                setDepartmentUpdateCount(result[0][0].count)
-                setDepartmentCountModalButtonActive(true)
-                result[0][0].count < 1 ? 
-                showErrorModal('No department matches search', true) : departmentUpdateData.manager_ssn && !result[1][0].exists ? 
-                showErrorModal('No employee with update SSN exists', true) : result[0][0].count > 1 ? setDepartmentCountModalShow(true) : handleDepartmentSubmit()
+                const dept_count = result[0][0].count
+                setConfirmModalButtonActive(true)
+                result[0][0].count < 1 ? openErrorModal('No department matches search') : 
+                !result[1][0].exists && departmentUpdateData.manager_ssn ? openErrorModal('No employee with update SSN exists') : 
+                result[0][0].count > 1 ? openConfirmModal(`This operation will update ${dept_count} departments!`) : handleDepartmentSubmit()
             })
         })
+    }
+
+    const openErrorModal = (message) => {
+        setErrorMessage(message)
+        setErrorModalShow(true)
+    }
+
+    const openConfirmModal = (message) => {
+        setConfirmMessage(message)
+        setConfirmModalShow(true)
+    }
+
+    const closeConfirmModal = () => {
+        setConfirmModalShow(false)
     }
 
     const closeErrorModal = () => {
@@ -487,9 +480,9 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         setResponseModalShow(false)
     }
 
-    const showResposneModal = (errMessage, show) => {
-        setResponseMessage(errMessage)
-        setResponseModalShow(show)
+    const openResponseModal = (message) => {
+        setResponseMessage(message)
+        setResponseModalShow(true)
     }
 
     return !loading && (
@@ -526,7 +519,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={employeeCountModalShow}>
+                                    show={confirmModalShow}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -535,12 +528,12 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Header>
                                     <Modal.Body
                                     className="modal-element">
-                                        <p>This operation will update {employeeUpdateCount} employees!</p>
+                                        <p>{confirmMessage}</p>
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={cancelEmployeeCountModal}>Cancel</Button>
-                                        <Button disabled={!employeeCountModalButtonActive} onClick={confirmEmployeeCountModal}>Confirm</Button>
+                                        <Button onClick={closeConfirmModal}>Cancel</Button>
+                                        <Button disabled={!confirmModalButtonActive} onClick={confirmEmployeeCountModal}>Confirm</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
@@ -901,7 +894,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={departmentCountModalShow}>
+                                    show={confirmModalShow}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -910,12 +903,12 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Header>
                                     <Modal.Body
                                     className="modal-element">
-                                        <p>This operation will update {departmentUpdateCount} departments!</p>
+                                        <p>{confirmMessage}</p>
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={cancelDepartmentCountModal}>Cancel</Button>
-                                        <Button disabled={!departmentCountModalButtonActive} onClick={confirmDepartmentCountModal}>Confirm</Button>
+                                        <Button onClick={closeConfirmModal}>Cancel</Button>
+                                        <Button disabled={!confirmModalButtonActive} onClick={confirmDepartmentCountModal}>Confirm</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
