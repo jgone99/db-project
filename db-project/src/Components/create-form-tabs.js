@@ -5,22 +5,6 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormGroup, Button, InputGroup, Col, Tab, Tabs, FormControl, FormLabel, Modal } from "react-bootstrap";
 import { differenceInYears } from "date-fns/differenceInYears";
 
-var employeeData = {
-    ssn: '',
-    dob: '',
-    f_name: '',
-    m_init: '',
-    l_name: '',
-    address: '',
-    dept_num: ''
-}
-
-var departmentData = {
-    dept_num: '',
-    dept_name: '',
-    manager_ssn: ''
-}
-
 var tabKey = 'employee'
 
 const prev_ssn = ['', '', '', '', '', '']
@@ -31,6 +15,21 @@ const prev_dept_num = {
 }
 
 const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentNums, getEmployeeSSNExists, getDepartmentNumExists }) => {
+    const[employeeData, setEmployeeData] = useState({
+        ssn: '',
+        dob: '',
+        f_name: '',
+        m_init: '',
+        l_name: '',
+        address: '',
+        dept_num: ''
+    })
+    const[departmentData, setDepartmentData] = useState({
+        dept_num: '',
+        dept_name: '',
+        manager_ssn: ''
+    })
+
     const [ existingDepts, setExistingDepts ] = useState([])
     const [ loading, setLoading ] = useState(true)
 
@@ -90,10 +89,12 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
         const fullSSNString = String(ssn[0].value + ssn[1].value + ssn[2].value)
         if (tabKey === 'employee') {
             employeeData.ssn = fullSSNString.length === 9 ? fullSSNString : ''
+            setEmployeeData(employeeData)
             console.log(employeeData)
         }
         else {
             departmentData.manager_ssn = fullSSNString.length === 9 ? fullSSNString : ''
+            setDepartmentData(departmentData)
             console.log(departmentData)
         }
     }
@@ -101,16 +102,22 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
     const onBlurEmployee = (e) => {
         const name = String(e.target.getAttribute('name'))
         const value = e.target.value
-        if (name in employeeData)
+        if (name in employeeData) {
             employeeData[name] = value
+            setEmployeeData(employeeData)
+        }
+            
         console.log(employeeData)
     }
 
     const onBlurDepartment = (e) => {
         const name = String(e.target.getAttribute('name'))
         const value = e.target.value
-        if (name in departmentData)
+        if (name in departmentData) {
             departmentData[name] = value
+            setDepartmentData(departmentData)
+        }
+            
         console.log(departmentData)
     }
 

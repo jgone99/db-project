@@ -14,25 +14,7 @@ var employeeSearchData = {
     address: '',
     dept_num: ''
 }
-var employeeUpdateData = {
-    ssn: '',
-    dob: '',
-    f_name: '',
-    m_init: '',
-    l_name: '',
-    address: '',
-    dept_num: ''
-}
-var departmentSearchData = {
-    dept_num: '',
-    dept_name: '',
-    manager_ssn: ''
-}
-var departmentUpdateData = {
-    dept_num: '',
-    dept_name: '',
-    manager_ssn: ''
-}
+
 var tabKey = 'employee'
 
 const prev_ssn_search = ['', '', '', '', '', '']
@@ -63,6 +45,35 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     const [errorMessage, setErrorMessage] = useState('')
     const [responseModalShow, setResponseModalShow] = useState(false)
     const [responseMessage, setResponseMessage] = useState('')
+
+    const[employeeSearchData, setEmployeeSearchData] = useState({
+        ssn: '',
+        dob: '',
+        f_name: '',
+        m_init: '',
+        l_name: '',
+        address: '',
+        dept_num: ''
+    })
+    const[departmentSearchData, setDepartmentSearchData] = useState({
+        dept_num: '',
+        dept_name: '',
+        manager_ssn: ''
+    })
+    const[employeeUpdateData, setEmployeeUpdateData] = useState({
+        ssn: '',
+        dob: '',
+        f_name: '',
+        m_init: '',
+        l_name: '',
+        address: '',
+        dept_num: ''
+    })
+    const[departmentUpdateData, setDepartmentUpdateData] = useState({
+        dept_num: '',
+        dept_name: '',
+        manager_ssn: ''
+    })
 
     useEffect(() => {
         getDepartmentNums().then(result => {
@@ -142,10 +153,12 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         const fullSSNString = String(ssn[0].value + ssn[1].value + ssn[2].value)
         if (tabKey === 'employee') {
             employeeSearchData.ssn = fullSSNString.length === 9 ? fullSSNString : ''
+            setEmployeeSearchData(employeeSearchData)
             console.log(employeeSearchData)
         }
         else {
             departmentSearchData.manager_ssn = fullSSNString.length === 9 ? fullSSNString : ''
+            setDepartmentSearchData(departmentSearchData)
             console.log(departmentSearchData)
         }
     }
@@ -158,6 +171,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
         console.log(ssn.length, fullSSNString)
         if (tabKey === 'employee') {
             employeeUpdateData.ssn = fullSSNString.length === 9 ? fullSSNString : ''
+            setEmployeeUpdateData(employeeUpdateData)
             console.log(employeeUpdateData)
         }
         else {
@@ -169,24 +183,33 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     const onBlurEmployeeSearch = (e) => {
         const name = String(e.target.getAttribute('name')).substring(2)
         const value = e.target.value
-        if (name in employeeSearchData)
+        if (name in employeeSearchData) {
             employeeSearchData[name] = value
+            setEmployeeSearchData(employeeSearchData)
+        }
+            
         console.log(employeeSearchData)
     }
 
     const onBlurEmployeeUpdate = (e) => {
         const name = String(e.target.getAttribute('name')).substring(2)
         const value = e.target.value
-        if (name in employeeUpdateData)
+        if (name in employeeUpdateData) {
             employeeUpdateData[name] = value
+            setEmployeeUpdateData(employeeUpdateData)
+        }
+            
         console.log(employeeUpdateData)
     }
 
     const onBlurDepartmentSearch = (e) => {
         const name = String(e.target.getAttribute('name')).substring(2)
         const value = e.target.value
-        if (name in departmentSearchData)
+        if (name in departmentSearchData) {
             departmentSearchData[name] = value
+            setDepartmentSearchData(departmentSearchData)
+        }
+            
         console.log(departmentSearchData)
     }
 
@@ -419,7 +442,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                 console.log(result)
                 setEmployeeUpdateCount(result[0][0].count)
                 setEmployeeCountModalButtonActive(true)
-                result[0][0] < 1 ? 
+                result[0][0].count < 1 ? 
                 showErrorModal('No employee matches search', true) : employeeUpdateData.ssn && result[1][0].exists ? 
                 showErrorModal('Employee already exists with update SSN', true) : result[0][0].count > 1 ?
                 setEmployeeCountModalShow(true) : handleEmployeeSubmit()
