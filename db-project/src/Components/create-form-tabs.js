@@ -37,6 +37,8 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
     const [errorMessage, setErrorMessage] = useState('')
     const [responseModalShow, setResponseModalShow] = useState(false)
     const [responseMessage, setResponseMessage] = useState('')
+    
+    const [maxDate, setMaxDate] = useState()
 
     useEffect(() => {
         getDepartmentNums().then(result => {
@@ -45,6 +47,13 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                 setLoading(false)
             })
         })
+        const currentDate = new Date()
+        const year = currentDate.getFullYear() - 18
+        const month = currentDate.getMonth() + 1
+        const day = currentDate.getDate()
+        const dateString = `${year}-${(month < 10 ? '0' : '') + month}-${day}`
+        setMaxDate(dateString)
+        console.log(dateString)
     },[getDepartmentNums])
 
     const generateDepartmentNumsOptions = () => {
@@ -337,6 +346,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                         <InputGroup>
                                             <InputGroup.Text>Date of Birth</InputGroup.Text>
                                             <Field name="dob" type="date"
+                                                max={maxDate}
                                                 className="form-control"
                                                 onBlur={onBlurEmployee} />
                                         </InputGroup>
