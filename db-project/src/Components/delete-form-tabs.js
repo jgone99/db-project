@@ -167,6 +167,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
     const handleEmployeeSubmit = () => {
         submitDeleteEmployee(employeeData).then(result => {
             result.status === 200 ? openResponseModal('Employee(s) Deleted', setResponseModalShowEmpployee) : openErrorModal('Something Went Wrong', setErrorModalShowEmployee)
+            populateDeptNums()
         })
     }
 

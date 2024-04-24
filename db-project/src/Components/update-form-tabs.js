@@ -237,6 +237,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
             updateData: employeeUpdateData
         }).then(result => {
             result.status === 200 ? openResponseModal('Employee(s) Updated', setResponseModalShowEmployee) : openErrorModal('Something Went Wrong', setErrorModalShowEmployee)
+            populateDeptNums()
         })
     }
 
@@ -246,6 +247,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
             updateData: departmentUpdateData
         }).then(result => {
             result.status === 200 ? openResponseModal('Department(s) Updated', setResponseModalShowDepartment) : openErrorModal('Something Went Wrong', setErrorModalShowDepartment)
+            populateDeptNums()
         })
     }
 

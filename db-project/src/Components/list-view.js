@@ -98,6 +98,7 @@ const ListView = () => {
     const saveTab = (key) => {
         setTabKey(key)
         setPageIndex(0)
+        setHasNextPage(false)
     }
 
     const onChangeSSNEmployeee = (e) => {
