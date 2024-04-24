@@ -14,7 +14,7 @@ import {
 import Create from "./Components/create";
 import Update from "./Components/update";
 import Delete from "./Components/delete";
-import EmployeeList from "./Components/employee-list";
+import ListView from "./Components/list-view";
 
 // App Component
 const App = () => {
@@ -112,10 +112,10 @@ const App = () => {
 								</Nav>
 
 								<Nav>
-									<Link to={"/employee-list"}
+									<Link to={"/list-view"}
 										className="nav-link link"
 										>
-										Employee List
+										List View
 									</Link>
 								</Nav>
 							</Nav>
@@ -164,8 +164,8 @@ const App = () => {
 											getDepartmentNumExists={getDepartmentNumExists}
 											/>} 
 									/>
-									<Route path="/employee-list"
-										element={<EmployeeList />} />
+									<Route path="/list-view"
+										element={<ListView />} />
 								</Routes>
 							</div>
 						</Col>

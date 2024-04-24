@@ -60,6 +60,10 @@ body h3 {
 	width: 300px;
 }
 
+.center {
+	justify-content: center;
+}
+
 .edit-link {
 	padding: 7px 10px;
 	font-size: 0.875rem;

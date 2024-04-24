@@ -33,9 +33,14 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
     const [existingDepts, setExistingDepts] = useState([])
     const [loading, setLoading] = useState(true)
 
-    const [errorModalShow, setErrorModalShow] = useState(false)
+    const [errorModalShowEmployee, setErrorModalShowEmployee] = useState(false)
+    const [errorModalShowDepartment, setErrorModalShowDepartment] = useState(false)
+
     const [errorMessage, setErrorMessage] = useState('')
-    const [responseModalShow, setResponseModalShow] = useState(false)
+    
+    const [responseModalShowEmployee, setResponseModalShowEmployee] = useState(false)
+    const [responseModalShowDepartment, setResponseModalShowDepartment] = useState(false)
+    
     const [responseMessage, setResponseMessage] = useState('')
 
     const [maxDate, setMaxDate] = useState()
@@ -154,13 +159,13 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
 
     const handleEmployeeSubmit = () => {
         submitNewEmployee(employeeData).then(result => {
-            result.status === 200 ? openResponseModal('Employee Created') : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Employee Created', setResponseModalShowEmployee) : openErrorModal('Something Went Wrong', setErrorModalShowEmployee)
         })
     }
 
     const handleDepartmentSubmit = () => {
         submitNewDepartment(departmentData).then(result => {
-            result.status === 200 ? openResponseModal('Department Created') : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Department Created', setResponseModalShowDepartment) : openErrorModal('Something Went Wrong', setErrorModalShowDepartment)
         })
     }
 
@@ -183,7 +188,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
     const createEmployeeClick = () => {
         getEmployeeSSNExists(employeeData).then(result => {
             result.json().then(result => {
-                result[0].exists ? openErrorModal('An employee already exists with this SSN') : handleEmployeeSubmit()
+                result[0].exists ? openErrorModal('An employee already exists with this SSN', setErrorModalShowEmployee) : handleEmployeeSubmit()
             })
         })
 
@@ -200,28 +205,28 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
             dept_num: ''
         })]).then(result => {
             Promise.all(result.map(prom => prom.json())).then(result => {
-                result[0][0].exists ? openErrorModal('A department already exists with this Department Number') :
-                !result[1][0].exists && departmentData.manager_ssn ? openErrorModal('No employee exists with this SSN') : handleDepartmentSubmit()
+                result[0][0].exists ? openErrorModal('A department already exists with this Department Number', setErrorModalShowDepartment) :
+                !result[1][0].exists && departmentData.manager_ssn ? openErrorModal('No employee exists with this SSN', setErrorModalShowDepartment) : handleDepartmentSubmit()
             })
         })
     }
 
-    const openErrorModal = (errMessage) => {
+    const openErrorModal = (errMessage, openModal) => {
         setErrorMessage(errMessage)
-        setErrorModalShow(true)
+        openModal(true)
     }
 
-    const openResponseModal = (errMessage) => {
+    const openResponseModal = (errMessage, openModal) => {
         setResponseMessage(errMessage)
-        setResponseModalShow(true)
+        openModal(true)
     }
 
-    const closeResponseModal = () => {
-        setResponseModalShow(false)
+    const closeResponseModal = (closeModal) => {
+        closeModal(false)
     }
 
-    const closeErrorModal = () => {
-        setErrorModalShow(false)
+    const closeErrorModal = (closeModal) => {
+        closeModal(false)
     }
 
     return !loading && (
@@ -253,7 +258,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={errorModalShow}>
+                                    show={errorModalShowEmployee}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title>
@@ -266,13 +271,13 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                     </Modal.Body>
                                     <Modal.Footer
                                         className="modal-element">
-                                        <Button onClick={closeErrorModal}>Close</Button>
+                                        <Button onClick={() => closeErrorModal(setErrorModalShowEmployee)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={responseModalShow}>
+                                    show={responseModalShowEmployee}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title>
@@ -285,7 +290,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                     </Modal.Body>
                                     <Modal.Footer
                                         className="modal-element">
-                                        <Button onClick={closeResponseModal}>Close</Button>
+                                        <Button onClick={() => closeResponseModal(setResponseModalShowEmployee)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Col>
@@ -451,7 +456,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={errorModalShow}>
+                                    show={errorModalShowDepartment}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title className="modal-element">
@@ -464,13 +469,13 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                     </Modal.Body>
                                     <Modal.Footer
                                         className="modal-element">
-                                        <Button onClick={closeErrorModal}>Close</Button>
+                                        <Button onClick={() => closeErrorModal(setErrorModalShowDepartment)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={responseModalShow}>
+                                    show={responseModalShowDepartment}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title>
@@ -483,7 +488,7 @@ const CreateFormTabs = ({ submitNewEmployee, submitNewDepartment, getDepartmentN
                                     </Modal.Body>
                                     <Modal.Footer
                                         className="modal-element">
-                                        <Button onClick={closeResponseModal}>Close</Button>
+                                        <Button onClick={() => closeResponseModal(setResponseModalShowDepartment)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Col>

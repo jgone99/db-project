@@ -31,18 +31,26 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
     const [ existingDepts, setExistingDepts ] = useState([])
     const [ loading, setLoading ] = useState(true)
 
-    const [errorModalShow, setErrorModalShow] = useState(false)
+    const [errorModalShowEmployee, setErrorModalShowEmployee] = useState(false)
+    const [errorModalShowDepartment, setErrorModalShowDepartment] = useState(false)
+
     const [errorMessage, setErrorMessage] = useState('')
-    const [responseModalShow, setResponseModalShow] = useState(false)
+
+    const [responseModalShowEmpployee, setResponseModalShowEmpployee] = useState(false)
+    const [responseModalShowDepartment, setResponseModalShowDepartment] = useState(false)
+
     const [responseMessage, setResponseMessage] = useState('')
+
+    const [confirmModalShowEmployee, setConfirmModalShowEmployee] = useState(false)
+    const [confirmModalShowDepartment, setConfirmModalShowDepartment] = useState(false)    
+    
+    const [confirmMessage, setConfirmMessage] = useState('')
+    
+    const [confirmModalButtonActive, setConfirmModalButtonActive] = useState(false)
 
     const [maxDate, setMaxDate] = useState()
 
     const [tabKey, setTabKey] = useState('employee')
-
-    const [confirmModalShow, setConfirmModalShow] = useState(false)
-    const [confirmMessage, setConfirmMessage] = useState('')
-    const [confirmModalButtonActive, setConfirmModalButtonActive] = useState(false)
 
     const populateDeptNums = useCallback(() => {
         getDepartmentNums().then(result => {
@@ -158,13 +166,13 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
 
     const handleEmployeeSubmit = () => {
         submitDeleteEmployee(employeeData).then(result => {
-            result.status === 200 ? openResponseModal('Employee(s) Deleted') : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Employee(s) Deleted', setResponseModalShowEmpployee) : openErrorModal('Something Went Wrong', setErrorModalShowEmployee)
         })
     }
 
     const handleDepartmentSubmit = () => {
         submitDeleteDepartment(departmentData).then(result => {
-            result.status === 200 ? openResponseModal('Department(s) Deleted') : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Department(s) Deleted', setResponseModalShowDepartment) : openErrorModal('Something Went Wrong', setErrorModalShowDepartment)
         })
     }
 
@@ -240,8 +248,8 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                 console.log(result)
                 const emp_count = result[0].count
                 setConfirmModalButtonActive(true)
-                result[0].count < 1 ? openErrorModal('No employee matches search') : 
-                result[0].count > 1 ? openConfirmModal(`This operation will delete ${emp_count} employees!`) : handleEmployeeSubmit()
+                result[0].count < 1 ? openErrorModal('No employee matches search', setErrorModalShowEmployee) : 
+                result[0].count > 1 ? openConfirmModal(`This operation will delete ${emp_count} employees!`, setConfirmModalShowEmployee) : handleEmployeeSubmit()
             })
         })
     }
@@ -254,48 +262,48 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                 const dept_count = result[0][0].count
                 const emp_count = result[1][0].count
                 setConfirmModalButtonActive(true)
-                result[0][0].count < 1 ? openErrorModal('No department matches specified search') : 
-                result[0][0].count > 1 ? openConfirmModal(`This operation will delete ${dept_count} departments AND ${emp_count} employees!`) : 
-                result[1][0].count > 0 ? openConfirmModal(`This opertation will delete this department WITH ${emp_count} employees!`) : handleDepartmentSubmit()
+                result[0][0].count < 1 ? openErrorModal('No department matches specified search', setErrorModalShowDepartment) : 
+                result[0][0].count > 1 ? openConfirmModal(`This operation will delete ${dept_count} departments AND ${emp_count} employees!`, setConfirmModalShowDepartment) : 
+                result[1][0].count > 0 ? openConfirmModal(`This opertation will delete this department WITH ${emp_count} employees!`, setConfirmModalShowDepartment) : handleDepartmentSubmit()
             })
         })
     }
 
     const confirmEmployeeModal = () => {
         handleEmployeeSubmit()
-        closeConfirmModal()
+        closeConfirmModal(setConfirmModalShowEmployee)
     }
 
     const confirmDepartmentModal = () => {
         handleDepartmentSubmit()
-        closeConfirmModal()
+        closeConfirmModal(setConfirmModalShowDepartment)
     }
 
-    const openErrorModal = (message) => {
+    const openErrorModal = (message, openModal) => {
         setErrorMessage(message)
-        setErrorModalShow(true)
+        openModal(true)
     }
 
-    const openConfirmModal = (message) => {
+    const openConfirmModal = (message, openModal) => {
         setConfirmMessage(message)
-        setConfirmModalShow(true)
+        openModal(true)
     }
 
-    const closeConfirmModal = () => {
-        setConfirmModalShow(false)
+    const closeConfirmModal = (closeModal) => {
+        closeModal(false)
     }
 
-    const closeErrorModal = () => {
-        setErrorModalShow(false)
+    const closeErrorModal = (closeModal) => {
+        closeModal(false)
     }
 
-    const closeResponseModal = () => {
-        setResponseModalShow(false)
+    const closeResponseModal = (closeModal) => {
+        closeModal(false)
     }
 
-    const openResponseModal = (message) => {
+    const openResponseModal = (message, openModal) => {
         setResponseMessage(message)
-        setResponseModalShow(true)
+        openModal(true)
     }
     
     return !loading && (
@@ -326,7 +334,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={confirmModalShow}>
+                                    show={confirmModalShowEmployee}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -339,14 +347,14 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeConfirmModal}>Cancel</Button>
+                                        <Button onClick={() => closeConfirmModal(setConfirmModalShowEmployee)}>Cancel</Button>
                                         <Button disabled={!confirmModalButtonActive} onClick={confirmEmployeeModal}>Confirm</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={errorModalShow}>
+                                    show={errorModalShowEmployee}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -359,13 +367,13 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeErrorModal}>Close</Button>
+                                        <Button onClick={() => closeErrorModal(setErrorModalShowEmployee)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={responseModalShow}>
+                                    show={responseModalShowEmpployee}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title>
@@ -378,7 +386,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeResponseModal}>Close</Button>
+                                        <Button onClick={() => closeResponseModal(setResponseModalShowEmpployee)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Col>
@@ -545,7 +553,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={confirmModalShow}>
+                                    show={confirmModalShowDepartment}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -558,14 +566,14 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeConfirmModal}>Cancel</Button>
+                                        <Button onClick={() => closeConfirmModal(setConfirmModalShowDepartment)}>Cancel</Button>
                                         <Button disabled={!confirmModalButtonActive} onClick={confirmDepartmentModal}>Confirm</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={errorModalShow}>
+                                    show={errorModalShowDepartment}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -578,13 +586,13 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeErrorModal}>Close</Button>
+                                        <Button onClick={() => closeErrorModal(setErrorModalShowDepartment)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={responseModalShow}>
+                                    show={responseModalShowDepartment}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title>
@@ -597,7 +605,7 @@ const DeleteFormTabs = ({ submitDeleteEmployee, submitDeleteDepartment, getDepar
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeResponseModal}>Close</Button>
+                                        <Button onClick={() => closeResponseModal(setResponseModalShowDepartment)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Col>

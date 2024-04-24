@@ -20,7 +20,8 @@ app.get('/', (request, response) => {
 })
 
 app.post('/get-employee', db.getEmployees)
-app.post('/employee-list', db.getEmployeesBySSN)
+app.post('/employee-list', db.getMatchingEmployees)
+app.post('/department-list', db.getMatchingDepartments)
 app.get('/department-nums', db.getDepartmentsNums)
 app.post('/create-employee', db.createEmployee)
 app.post('/create-department', db.createDepartment)

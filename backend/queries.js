@@ -45,6 +45,71 @@ const getEmployees = async (request, response) => {
 	}
 }
 
+ const getMatchingEmployees = async (request, response) => {
+	const { ssn, dob, f_name, m_init, l_name, address, dept_num, page_index } = request.body
+
+	const queryString = 
+		`SELECT * 
+		FROM (
+			SELECT ROW_NUMBER() OVER(), * 
+			FROM (
+				SELECT ssn, dob::TEXT, f_name, m_init, l_name, address, dept_num
+				FROM employee 
+				WHERE LPAD(ssn::TEXT, 9, '0') LIKE $1 || '%'
+					AND dob=COALESCE(NULLIF($2, '')::DATE, dob)
+					AND f_name LIKE $3 || '%'
+					AND (m_init LIKE $4 || '%' OR (NULLIF($4, '') IS NULL AND m_init IS NULL))
+					AND l_name LIKE $5 || '%'
+					AND address LIKE $6 || '%'
+					AND dept_num::TEXT LIKE $7 || '%'
+				ORDER BY ssn ASC
+			)
+		)
+		WHERE row_number::INTEGER BETWEEN $8 * 50 + 1 AND ($8 + 1) * 50 + 1`
+
+	try {
+		const res = await query(queryString, [ssn, dob, f_name, m_init, l_name, address, dept_num, page_index])
+		response.status(200).send(res)
+		console.log('successfully fetched matching employees')
+	} catch (error) {
+		response.status(500).end()
+		console.log('failed to fetch matching employees', error)
+	}
+ }
+
+const getMatchingDepartments = async (request, response) => {
+	const { dept_num, dept_name, manager_ssn, page_index } = request.body
+
+	const queryString = 
+		`SELECT *
+		FROM (
+			SELECT ROW_NUMBER() OVER(), *
+			FROM (
+				SELECT *
+				FROM department
+				WHERE dept_num::TEXT LIKE $1 || '%'
+					AND dept_name LIKE $2 || '%'
+					AND (LPAD(manager_ssn::TEXT, 9, '0') LIKE $3 || '%' OR (NULLIF($3, '') IS NULL AND manager_ssn IS NULL))
+			)
+			NATURAL LEFT JOIN (
+				SELECT dept_num, count(ssn)
+				FROM employee
+				GROUP BY dept_num
+			)
+			ORDER BY dept_num ASC
+		)
+		WHERE row_number::INTEGER BETWEEN $4 * 50 AND ($4 + 1) * 50 + 1`
+
+	try {
+		const res = await query(queryString, [dept_num, dept_name, manager_ssn, page_index])
+		response.status(200).send(res)
+		console.log('successfully fetched matching departments')
+	} catch (error) {
+		response.status(500).end()
+		console.log('failed to fetch matching departments', error)
+	}
+}
+
 const getDepartmentsNums = async (request, response) => {
 	const res = await query('SELECT dept_num FROM department GROUP BY dept_num ORDER BY dept_num ASC')
 	response.status(200).send(res)
@@ -140,8 +205,20 @@ const updateEmployee = async (request, response) => {
 
 	const updateQueryString =
 		`UPDATE employee
-		SET ssn=COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn), dob=COALESCE(CAST(NULLIF($2,'') AS DATE), dob), f_name=COALESCE(NULLIF($3,''), f_name), m_init=COALESCE(NULLIF($4,''), m_init), l_name=COALESCE(NULLIF($5,''), l_name), address=COALESCE(NULLIF($6,''), address), dept_num=COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num)
-		WHERE ssn=COALESCE(CAST(NULLIF($8,'') AS INTEGER), ssn) AND dob=COALESCE(CAST(NULLIF($9,'') AS DATE), dob) AND f_name=COALESCE(NULLIF($10,''), f_name) AND (m_init=COALESCE(NULLIF($11,''), m_init) OR (NULLIF($11, '') IS NULL AND m_init IS NULL)) AND l_name=COALESCE(NULLIF($12,''), l_name) AND address=COALESCE(NULLIF($13,''), address) AND dept_num=COALESCE(CAST(NULLIF($14,'') AS INTEGER), dept_num)`
+		SET ssn=COALESCE(CAST(NULLIF($1,'') AS INTEGER), ssn), 
+			dob=COALESCE(CAST(NULLIF($2,'') AS DATE), dob), 
+			f_name=COALESCE(NULLIF($3,''), f_name), 
+			m_init=COALESCE(NULLIF($4,''), m_init), 
+			l_name=COALESCE(NULLIF($5,''), l_name), 
+			address=COALESCE(NULLIF($6,''), address), 
+			dept_num=COALESCE(CAST(NULLIF($7,'') AS INTEGER), dept_num)
+		WHERE ssn=COALESCE(CAST(NULLIF($8,'') AS INTEGER), ssn) 
+			AND dob=COALESCE(CAST(NULLIF($9,'') AS DATE), dob) 
+			AND f_name=COALESCE(NULLIF($10,''), f_name) 
+			AND (m_init=COALESCE(NULLIF($11,''), m_init) OR (NULLIF($11, '') IS NULL AND m_init IS NULL)) 
+			AND l_name=COALESCE(NULLIF($12,''), l_name) 
+			AND address=COALESCE(NULLIF($13,''), address) 
+			AND dept_num=COALESCE(CAST(NULLIF($14,'') AS INTEGER), dept_num)`
 
 	console.log(Object.values(updateData).concat(Object.values(searchData)))
 
@@ -184,8 +261,12 @@ const updateDepartment = async (request, response) => {
 
 	const updateQueryString =
 		`UPDATE department
-	SET dept_num=COALESCE(CAST(NULLIF($1,'') AS INTEGER), dept_num), dept_name=COALESCE(NULLIF($2,''), dept_name), manager_ssn=COALESCE(CAST(NULLIF($3,'') AS INTEGER), manager_ssn)
-	WHERE dept_num=COALESCE(CAST(NULLIF($4,'') AS INTEGER), dept_num) AND dept_name=COALESCE(NULLIF($5,''), dept_name) AND (manager_ssn=COALESCE(CAST(NULLIF($6,'') AS INTEGER), manager_ssn) OR (NULLIF($6, '') IS NULL AND manager_ssn IS NULL))`
+		SET dept_num=COALESCE(CAST(NULLIF($1,'') AS INTEGER), dept_num), 
+			dept_name=COALESCE(NULLIF($2,''), dept_name), 
+			manager_ssn=COALESCE(CAST(NULLIF($3,'') AS INTEGER), manager_ssn)
+		WHERE dept_num=COALESCE(CAST(NULLIF($4,'') AS INTEGER), dept_num) 
+		AND dept_name=COALESCE(NULLIF($5,''), dept_name) 
+		AND (manager_ssn=COALESCE(CAST(NULLIF($6,'') AS INTEGER), manager_ssn) OR (NULLIF($6, '') IS NULL AND manager_ssn IS NULL))`
 
 	console.log([updateData.dept_num, updateData.dept_name, updateData.manager_ssn, searchData.dept_num, searchData.dept_name, searchData.manager_ssn])
 
@@ -251,7 +332,7 @@ const getEmployeeCountByDepartmentMatch = async(request, response) => {
 		response.status(200).send(res)
 	} catch (error) {
 		console.log('failed to fetch data')
-		response.stats(500).end()
+		response.status(500).end()
 	}
 }
 
@@ -268,5 +349,7 @@ module.exports = {
 	deleteDepartment,
 	employeeSSNExists,
 	departmentNumExists,
-	getEmployeeCountByDepartmentMatch
+	getEmployeeCountByDepartmentMatch,
+	getMatchingEmployees,
+	getMatchingDepartments
 }

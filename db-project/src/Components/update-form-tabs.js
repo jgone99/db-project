@@ -23,13 +23,16 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
     const [existingDepts, setExistingDepts] = useState([])
     const [loading, setLoading] = useState(true)
 
-    const [errorModalShow, setErrorModalShow] = useState(false)
+    const [errorModalShowEmployee, setErrorModalShowEmployee] = useState(false)
+    const [errorModalShowDepartment, setErrorModalShowDepartment] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
 
-    const [responseModalShow, setResponseModalShow] = useState(false)
+    const [responseModalShowEmployee, setResponseModalShowEmployee] = useState(false)
+    const [responseModalShowDepartment, setResponseModalShowDepartment] = useState(false)
     const [responseMessage, setResponseMessage] = useState('')
 
-    const [confirmModalShow, setConfirmModalShow] = useState(false)
+    const [confirmModalShowEmployee, setConfirmModalShowEmployee] = useState(false)
+    const [confirmModalShowDepartment, setConfirmModalShowDepartment] = useState(false)
     const [confirmMessage, setConfirmMessage] = useState('')
     const [confirmModalButtonActive, setConfirmModalButtonActive] = useState(false)
 
@@ -233,7 +236,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
             searchData: employeeSearchData,
             updateData: employeeUpdateData
         }).then(result => {
-            result.status === 200 ? openResponseModal('Employee(s) Updated') : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Employee(s) Updated', setResponseModalShowEmployee) : openErrorModal('Something Went Wrong', setErrorModalShowEmployee)
         })
     }
 
@@ -242,7 +245,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
             searchData: departmentSearchData,
             updateData: departmentUpdateData
         }).then(result => {
-            result.status === 200 ? openResponseModal('Department(s) Updated') : openErrorModal('Something Went Wrong')
+            result.status === 200 ? openResponseModal('Department(s) Updated', setResponseModalShowDepartment) : openErrorModal('Something Went Wrong', setErrorModalShowDepartment)
         })
     }
 
@@ -408,12 +411,13 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
 
     const confirmEmployeeCountModal = () => {
         handleEmployeeSubmit()
-        closeConfirmModal()
+        closeConfirmModal(setConfirmModalShowEmployee)
     }
 
     const confirmDepartmentCountModal = () => {
+        console.log('runs')
         handleDepartmentSubmit()
-        closeConfirmModal()
+        closeConfirmModal(setConfirmModalShowDepartment)
     }
 
     const updateEmployeeClick = () => {
@@ -430,9 +434,9 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                 console.log(result)
                 const emp_count = result[0][0].count
                 setConfirmModalButtonActive(true)
-                result[0][0].count < 1 ? openErrorModal('No employee matches search') : 
-                result[1][0].exists && employeeUpdateData.ssn ? openErrorModal('Employee already exists with update SSN') : 
-                result[0][0].count > 1 ? openConfirmModal(`This operation will update ${emp_count} employees!`) : handleEmployeeSubmit()
+                result[0][0].count < 1 ? openErrorModal('No employee matches search', setErrorModalShowEmployee) : 
+                result[1][0].exists && employeeUpdateData.ssn ? openErrorModal('Employee already exists with update SSN', setErrorModalShowEmployee) : 
+                result[0][0].count > 1 ? openConfirmModal(`This operation will update ${emp_count} employees!`, setConfirmModalShowEmployee) : handleEmployeeSubmit()
             })
         })
     }
@@ -451,38 +455,38 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                 console.log(result)
                 const dept_count = result[0][0].count
                 setConfirmModalButtonActive(true)
-                result[0][0].count < 1 ? openErrorModal('No department matches search') : 
-                !result[1][0].exists && departmentUpdateData.manager_ssn ? openErrorModal('No employee with update SSN exists') : 
-                result[0][0].count > 1 ? openConfirmModal(`This operation will update ${dept_count} departments!`) : handleDepartmentSubmit()
+                result[0][0].count < 1 ? openErrorModal('No department matches search', setErrorModalShowDepartment) : 
+                !result[1][0].exists && departmentUpdateData.manager_ssn ? openErrorModal('No employee with update SSN exists', setErrorModalShowEmployee) : 
+                result[0][0].count > 1 ? openConfirmModal(`This operation will update ${dept_count} departments!`, setConfirmModalShowDepartment) : handleDepartmentSubmit()
             })
         })
     }
 
-    const openErrorModal = (message) => {
+    const openErrorModal = (message, modalOpen) => {
         setErrorMessage(message)
-        setErrorModalShow(true)
+        modalOpen(true)
     }
 
-    const openConfirmModal = (message) => {
+    const openConfirmModal = (message, modalOpen) => {
         setConfirmMessage(message)
-        setConfirmModalShow(true)
+        modalOpen(true)
     }
 
-    const closeConfirmModal = () => {
-        setConfirmModalShow(false)
+    const closeConfirmModal = (modalClose) => {
+        modalClose(false)
     }
 
-    const closeErrorModal = () => {
-        setErrorModalShow(false)
+    const closeErrorModal = (modalClose) => {
+        modalClose(false)
     }
 
-    const closeResponseModal = () => {
-        setResponseModalShow(false)
+    const closeResponseModal = (modalClose) => {
+        modalClose(false)
     }
 
-    const openResponseModal = (message) => {
+    const openResponseModal = (message, modalOpen) => {
         setResponseMessage(message)
-        setResponseModalShow(true)
+        modalOpen(true)
     }
 
     return !loading && (
@@ -519,7 +523,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={confirmModalShow}>
+                                    show={confirmModalShowEmployee}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -532,14 +536,14 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeConfirmModal}>Cancel</Button>
+                                        <Button onClick={() => closeConfirmModal(setConfirmModalShowEmployee)}>Cancel</Button>
                                         <Button disabled={!confirmModalButtonActive} onClick={confirmEmployeeCountModal}>Confirm</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={errorModalShow}>
+                                    show={errorModalShowEmployee}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -552,13 +556,13 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeErrorModal}>Close</Button>
+                                        <Button onClick={() => closeErrorModal(setErrorModalShowEmployee)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={responseModalShow}>
+                                    show={responseModalShowEmployee}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title>
@@ -571,7 +575,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeResponseModal}>Close</Button>
+                                        <Button onClick={() => closeResponseModal(setResponseModalShowEmployee)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Row>
@@ -894,7 +898,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={confirmModalShow}>
+                                    show={confirmModalShowDepartment}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -907,14 +911,14 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeConfirmModal}>Cancel</Button>
+                                        <Button onClick={() => closeConfirmModal(setConfirmModalShowDepartment)}>Cancel</Button>
                                         <Button disabled={!confirmModalButtonActive} onClick={confirmDepartmentCountModal}>Confirm</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={errorModalShow}>
+                                    show={errorModalShowDepartment}>
                                     <Modal.Header closeButton
                                     className="modal-element">
                                         <Modal.Title>
@@ -927,13 +931,13 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeErrorModal}>Close</Button>
+                                        <Button onClick={() => closeErrorModal(setErrorModalShowDepartment)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Modal
                                     centered
                                     size="lg"
-                                    show={responseModalShow}>
+                                    show={responseModalShowDepartment}>
                                     <Modal.Header closeButton
                                         className="modal-element">
                                         <Modal.Title>
@@ -946,7 +950,7 @@ const UpdateFormTabs = ({ updateEmployee, updateDepartment, getDepartmentNums, g
                                     </Modal.Body>
                                     <Modal.Footer
                                     className="modal-element">
-                                        <Button onClick={closeResponseModal}>Close</Button>
+                                        <Button onClick={() => closeResponseModal(setResponseModalShowDepartment)}>Close</Button>
                                     </Modal.Footer>
                                 </Modal>
                                 <Row>
