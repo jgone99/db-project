@@ -20,7 +20,7 @@ import ListView from "./Components/list-view";
 const App = () => {
 
 	const fetchExistingDepartmentsNums = async() => {
-		const response = await fetch('backend/department-nums', {
+		const response = await fetch('/api/department-nums', {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const App = () => {
 	}
 
 	const getEmployeeCount = async(data) => {
-		const response = await fetch('backend/get-employee', {
+		const response = await fetch('/api/get-employee', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ const App = () => {
 	}
 
     const getDepartmentCount = async(data) => {
-		const response = await fetch('backend/department-count', {
+		const response = await fetch('/api/department-count', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ const App = () => {
 	}
 
 	const getEmployeeSSNExists = async(data) => {
-		const response = await fetch('backend/employee-ssn-exists', {
+		const response = await fetch('/api/employee-ssn-exists', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ const App = () => {
 	}
 
 	const getDepartmentNumExists = async(data) => {
-		const response = await fetch('backend/department-num-exists', {
+		const response = await fetch('/api/department-num-exists', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
