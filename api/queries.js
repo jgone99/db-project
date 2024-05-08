@@ -96,8 +96,8 @@ const getMatchingDepartments = async (request, response) => {
 				FROM employee
 				GROUP BY dept_num
 			)
-			ORDER BY dept_num ASC
-		) AS matching
+		) AS part2
+		ORDER BY dept_num ASC
 		WHERE row_number::INTEGER BETWEEN $4 * 50 AND ($4 + 1) * 50 + 1`
 
 	try {
