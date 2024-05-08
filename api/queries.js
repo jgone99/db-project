@@ -63,8 +63,8 @@ const getEmployees = async (request, response) => {
 					AND address LIKE $6 || '%'
 					AND dept_num::TEXT LIKE $7 || '%'
 				ORDER BY ssn ASC
-			)
-		)
+			) AS part1
+		) AS part2
 		WHERE row_number::INTEGER BETWEEN $8 * 50 + 1 AND ($8 + 1) * 50 + 1`
 
 	try {
@@ -97,7 +97,7 @@ const getMatchingDepartments = async (request, response) => {
 				GROUP BY dept_num
 			)
 			ORDER BY dept_num ASC
-		)
+		) AS matching
 		WHERE row_number::INTEGER BETWEEN $4 * 50 AND ($4 + 1) * 50 + 1`
 
 	try {
