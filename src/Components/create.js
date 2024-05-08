@@ -5,7 +5,7 @@ import CreateFormTabs from "./create-form-tabs";
 const Create = ({ getDepartmentNums, getEmployeeSSNExists, getDepartmentNumExists }) => {
 
 	const submitNewEmployee = async (data) => {
-		const response = await fetch('http://localhost:4000/create-employee', {
+		const response = await fetch('backend/create-employee', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ const Create = ({ getDepartmentNums, getEmployeeSSNExists, getDepartmentNumExist
 	}
 
 	const submitNewDepartment = async (data) => {
-		const response = await fetch('http://localhost:4000/create-department', {
+		const response = await fetch('backend/create-department', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

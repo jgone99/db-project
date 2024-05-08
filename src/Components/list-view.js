@@ -38,7 +38,7 @@ const ListView = () => {
     })
 
     const getMatchingEmployees = async (data) => {
-        const response = await fetch('http://localhost:4000/employee-list', {
+        const response = await fetch('backend/employee-list', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ const ListView = () => {
     }
 
     const getMatchingDepartments = async (data) => {
-        const response = await fetch('http://localhost:4000/department-list', {
+        const response = await fetch('backend/department-list', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
