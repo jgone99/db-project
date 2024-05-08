@@ -90,7 +90,7 @@ const getMatchingDepartments = async (request, response) => {
 				WHERE dept_num::TEXT LIKE $1 || '%'
 					AND dept_name LIKE $2 || '%'
 					AND (LPAD(manager_ssn::TEXT, 9, '0') LIKE $3 || '%' OR (NULLIF($3, '') IS NULL AND manager_ssn IS NULL))
-			)
+			) AS part1
 			NATURAL LEFT JOIN (
 				SELECT dept_num, count(ssn)
 				FROM employee
