@@ -5,7 +5,7 @@ import UpdateFormTabs from "./update-form-tabs"
 const Update = ({ getDepartmentNums, getEmployeeCount, getDepartmentCount, getEmployeeSSNExists, getDepartmentNumExists }) => {
 
     const updateEmployee = async (data) => {
-        const response = await fetch('api/update-employee', {
+        const response = await fetch('/api/update-employee', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ const Update = ({ getDepartmentNums, getEmployeeCount, getDepartmentCount, getEm
     }
 
     const updateDepartment = async (data) => {
-        const response = await fetch('api/update-department', {
+        const response = await fetch('/api/update-department', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ import DeleteFormTabs from "./delete-form-tabs";
 
 const Delete = ({ getDepartmentNums, getEmployeeCount, getDepartmentCount, getEmployeeSSNExists, getDepartmentNumExists }) => {
 	const submitDeleteEmployee = async (data) => {
-		const response = await fetch('api/delete-employee', {
+		const response = await fetch('/api/delete-employee', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ const Delete = ({ getDepartmentNums, getEmployeeCount, getDepartmentCount, getEm
 	}
 
 	const submitDeleteDepartment = async (data) => {
-		const response = await fetch('api/delete-department', {
+		const response = await fetch('/api/delete-department', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ const Delete = ({ getDepartmentNums, getEmployeeCount, getDepartmentCount, getEm
 	}
 
 	const getEmployeeCountByDepartmentMatch = async(data) => {
-		const response = await fetch('api/employee-count-department-match', {
+		const response = await fetch('/api/employee-count-department-match', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
